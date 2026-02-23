@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="포켓몬 울음소리 맞추기 퀴즈 게임! 1세대부터 3세대까지 다양한 포켓몬의 소리를 듣고 이름을 맞춰보세요. 나의 포켓몬 지식은 상위 몇 %일까요?">
+  <meta name="keywords" content="포켓몬, 울음소리, 퀴즈, 게임, 포켓몬스터, 1세대, 2세대, 3세대, 웹게임">
+  <meta name="author" content="PokeCry">
   <title>이 울음소리 포켓몬은? - POKÉCRY</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -66,7 +69,7 @@
           <div id="unknownIcon" style="position:absolute;font-size:40px;color:var(--green-dim);">?</div>
         </div>
 
-        <button class="px-btn hint-btn" id="hintBtn" style="margin-bottom:16px;padding:8px;width:auto;font-size:8px;background:transparent;border:1px solid var(--green-dim);color:var(--green-dim);">
+        <button class="px-btn hint-btn" id="hintBtn" style="margin-bottom:16px;padding:12px;width:auto;font-size:12px;background:transparent;border:1px solid var(--green-dim);color:var(--green-dim);">
           💡 힌트 보기 (-5점)
         </button>
 
@@ -96,14 +99,50 @@
           <div class="stat-row"><span>정답</span><span id="statCorrect"></span></div>
           <div class="stat-row"><span>오답</span><span id="statWrong"></span></div>
           <div class="stat-row"><span>최고 연속 정답</span><span id="statStreak"></span></div>
+          <div class="stat-row"><span>나의 순위</span><span id="statRank">상위 -%</span></div>
           <div class="stat-row"><span>난이도</span><span id="statDiff"></span></div>
         </div>
         <button class="px-btn" id="restartBtn" style="margin-bottom:10px"><span>↺ 다시 하기</span></button>
         <button class="px-btn" id="goStartBtn" style="background:transparent;border-color:var(--border);color:var(--green-dim);box-shadow:none;margin-top:6px"><span>◀ 타이틀로</span></button>
       </div>
     </main>
-
   </div>
+
+  <!-- Content Section for SEO & AdSense -->
+  <section class="content-section">
+    <h2>포켓몬 울음소리 퀴즈란?</h2>
+    <p>
+      '이 울음소리 포켓몬은?' 게임은 추억의 포켓몬스터 게임 속 울음소리를 듣고 
+      어떤 포켓몬인지 맞추는 팬 게임입니다. 
+      1세대(레드/그린)부터 3세대(루비/사파이어)까지의 다양한 포켓몬이 등장합니다.
+    </p>
+
+    <h2>게임 방법</h2>
+    <ul>
+      <li><strong>듣기:</strong> '울음소리 듣기' 버튼을 눌러 소리를 확인하세요.</li>
+      <li><strong>맞추기:</strong> 4개의 보기 중 정답을 선택하세요.</li>
+      <li><strong>시간 제한:</strong> 각 문제는 15초의 제한 시간이 있습니다. 빨리 맞출수록 높은 점수를 얻습니다.</li>
+      <li><strong>힌트:</strong> 너무 어렵다면 힌트를 사용하여 실루엣을 볼 수 있지만, 점수가 차감됩니다.</li>
+    </ul>
+
+    <h2>특징</h2>
+    <ul>
+      <li>레트로 CRT 모니터 스타일의 감성적인 디자인</li>
+      <li>실시간 오디오 시각화 (Waveform) 효과</li>
+      <li>모바일과 PC 모두에서 즐길 수 있는 반응형 웹 디자인</li>
+    </ul>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-links">
+      <a href="#">이용약관</a>
+      <a href="#">개인정보처리방침</a>
+      <a href="https://pokeapi.co/" target="_blank">Powered by PokeAPI</a>
+    </div>
+    <div class="copyright">
+      &copy; 2026 PokeCry. Pokémon and Pokémon character names are trademarks of Nintendo.
+    </div>
+  </footer>
 
   <script type="module" src="main.js"></script>
 </body>

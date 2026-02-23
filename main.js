@@ -59,6 +59,7 @@ const els = {
   statCorrect: document.getElementById('statCorrect'),
   statWrong: document.getElementById('statWrong'),
   statStreak: document.getElementById('statStreak'),
+  statRank: document.getElementById('statRank'), // Added Rank
   statDiff: document.getElementById('statDiff'),
 
   // Buttons
@@ -187,6 +188,7 @@ function getUnusedId() {
 }
 
 function getKoreanName(species) {
+  if (!species) return '???';
   const nameObj = species.names.find(n => n.language.name === 'ko');
   return nameObj ? nameObj.name : species.name;
 }
@@ -221,7 +223,7 @@ async function loadRound() {
   // Reset UI
   els.resultMsg.className = 'result-msg';
   els.nextBtnWrap.classList.remove('show');
-  els.choices.innerHTML = '<div style="font-size:8px;color:var(--green-dim);text-align:center;padding:30px;grid-column:1/-1" class="loading-dots">데이터 통신 중</div>';
+  els.choices.innerHTML = '<div style="font-size:12px;color:var(--green-dim);text-align:center;padding:30px;grid-column:1/-1" class="loading-dots">데이터 통신 중</div>';
   els.playCryBtn.disabled = true;
   els.hintBtn.disabled = false;
   els.hintBtn.style.opacity = '1';
@@ -295,7 +297,7 @@ async function loadRound() {
 
   } catch (err) {
     console.error(err);
-    els.choices.innerHTML = '<div style="font-size:8px;color:var(--red);text-align:center;grid-column:1/-1">데이터 수신 실패. 재시도 중...</div>';
+    els.choices.innerHTML = '<div style="font-size:12px;color:var(--red);text-align:center;grid-column:1/-1">데이터 수신 실패. 재시도 중...</div>';
     setTimeout(() => {
       state.usedIds.pop();
       state.currentRound--;
@@ -479,6 +481,19 @@ function nextRound() {
   }
 }
 
+// --- Rank Logic ---
+function calculateRank(score) {
+  // Simple simulation logic based on possible max score (~150 * 10 = 1500)
+  if (score >= 1400) return '상위 0.1%';
+  if (score >= 1200) return '상위 1%';
+  if (score >= 1000) return '상위 5%';
+  if (score >= 800) return '상위 10%';
+  if (score >= 600) return '상위 20%';
+  if (score >= 400) return '상위 40%';
+  if (score >= 200) return '상위 60%';
+  return '상위 90%';
+}
+
 // --- End Game ---
 function endGame() {
   showScreen('screenEnd');
@@ -495,6 +510,10 @@ function endGame() {
   els.finalGrade.textContent = grade;
   els.finalGrade.style.color = color;
   els.finalGrade.style.textShadow = `0 0 15px ${color}66`;
+
+  // Rank
+  const rank = calculateRank(state.score);
+  els.statRank.textContent = rank;
 
   els.statCorrect.textContent = `${state.correctCount}문제`;
   els.statWrong.textContent = `${ROUNDS - state.correctCount}문제`;
