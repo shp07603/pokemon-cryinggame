@@ -1,14 +1,105 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hello World</title>
-  <link href='/style.css' rel='stylesheet'>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>이 울음소리 포켓몬은? - POKÉCRY</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Hello, world!</h1>
-  <button onclick="console.log('hello');">Press me</button>
-  <script defer type="text/javascript" src="/main.js"></script>
+
+  <div class="streak-badge" id="streakBadge">🔥 <span id="streakCount"></span> 연속 정답!</div>
+
+  <div class="game-shell">
+    <header class="header">
+      <div class="header-title">◀ POKÉCRY ▶</div>
+      <div class="header-score">점수: <span id="headerScore">0</span></div>
+      <div class="header-round"><span id="headerRound">-</span>/10</div>
+    </header>
+
+    <!-- ── START SCREEN ── -->
+    <main class="screen active" id="screenStart">
+      <div class="start-logo">
+        <span class="big">이 울음소리<br>포켓몬은?</span>
+        <span class="sub">소리만 듣고 포켓몬을 맞춰보세요!<br>10문제 · 15초 제한</span>
+      </div>
+
+      <div class="pokemon-marquee" id="marqueeWrap">
+        <div class="marquee-inner" id="marqueeInner"></div>
+        <div class="marquee-inner" id="marqueeInner2" aria-hidden="true"></div>
+      </div>
+
+      <div class="diff-select">
+        <span class="diff-label">▶ 난이도 선택</span>
+        <div class="diff-btns">
+          <button class="diff-btn selected" data-diff="1" data-range="1-151">
+            🌱 입문<br><small>1세대 (151)</small>
+          </button>
+          <button class="diff-btn" data-diff="2" data-range="1-251">
+            ⚡ 보통<br><small>1~2세대 (251)</small>
+          </button>
+          <button class="diff-btn" data-diff="3" data-range="1-386">
+            🔥 고수<br><small>1~3세대 (386)</small>
+          </button>
+        </div>
+      </div>
+
+      <button class="px-btn" id="startBtn"><span>▶ 게임 시작</span></button>
+    </main>
+
+    <!-- ── GAME SCREEN ── -->
+    <main class="screen" id="screenGame">
+      <div class="timer-wrap">
+        <div class="timer-bar-bg">
+          <div class="timer-bar" id="timerBar"></div>
+        </div>
+        <div class="timer-label" id="timerLabel">15초</div>
+      </div>
+
+      <div class="pokemon-area">
+        <div class="silhouette-wrap">
+          <div class="scan-ring" id="scanRing"></div>
+          <img class="pokemon-sprite hidden-sprite" id="pokemonSprite" src="" alt="포켓몬">
+        </div>
+
+        <div class="waveform" id="waveform"></div>
+
+        <button class="play-cry-btn" id="playCryBtn">
+          <span class="play-icon">♪</span>
+          <span>울음소리 듣기</span>
+        </button>
+      </div>
+
+      <div class="choices" id="choices"></div>
+
+      <div class="result-msg" id="resultMsg"></div>
+      <div class="next-btn-wrap" id="nextBtnWrap">
+        <button class="px-btn" id="nextBtn"><span>다음 문제 ▶</span></button>
+      </div>
+    </main>
+
+    <!-- ── END SCREEN ── -->
+    <main class="screen" id="screenEnd">
+      <div class="end-screen">
+        <div class="final-score-label">▶ 최종 결과</div>
+        <span class="final-score" id="finalScore"></span>
+        <span class="final-grade" id="finalGrade"></span>
+        <div class="stats-wrap">
+          <div class="stat-row"><span>정답</span><span id="statCorrect"></span></div>
+          <div class="stat-row"><span>오답</span><span id="statWrong"></span></div>
+          <div class="stat-row"><span>최고 연속 정답</span><span id="statStreak"></span></div>
+          <div class="stat-row"><span>난이도</span><span id="statDiff"></span></div>
+        </div>
+        <button class="px-btn" id="restartBtn" style="margin-bottom:10px"><span>↺ 다시 하기</span></button>
+        <button class="px-btn" id="goStartBtn" style="background:transparent;border-color:var(--border);color:var(--green-dim);box-shadow:none;margin-top:6px"><span>◀ 타이틀로</span></button>
+      </div>
+    </main>
+
+  </div>
+
+  <script type="module" src="main.js"></script>
 </body>
 </html>
