@@ -23,12 +23,15 @@ let state = {
   correctCount: 0,
   usedIds: [],
   currentPokemon: null,
+  currentSpecies: null,
   timeLeft: TIME_LIMIT,
   timerInterval: null,
   isAnswered: false,
+  hintUsed: false,
   audio: null,
   crySrc: '',
-  cache: {}
+  cache: {},
+  speciesCache: {}
 };
 
 // --- DOM Elements ---
@@ -39,9 +42,11 @@ const els = {
   timerBar: document.getElementById('timerBar'),
   timerLabel: document.getElementById('timerLabel'),
   pokemonSprite: document.getElementById('pokemonSprite'),
+  unknownIcon: document.getElementById('unknownIcon'),
   scanRing: document.getElementById('scanRing'),
   waveform: document.getElementById('waveform'),
   playCryBtn: document.getElementById('playCryBtn'),
+  hintBtn: document.getElementById('hintBtn'),
   choices: document.getElementById('choices'),
   resultMsg: document.getElementById('resultMsg'),
   nextBtnWrap: document.getElementById('nextBtnWrap'),
@@ -76,6 +81,7 @@ function setupEventListeners() {
   els.restartBtn.addEventListener('click', startGame);
   els.goStartBtn.addEventListener('click', () => showScreen('screenStart'));
   els.playCryBtn.addEventListener('click', playCry);
+  els.hintBtn.addEventListener('click', useHint);
 
   els.diffBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -153,6 +159,20 @@ async function fetchPokemon(id) {
   }
 }
 
+async function fetchSpecies(id) {
+  if (state.speciesCache[id]) return state.speciesCache[id];
+  try {
+    const res = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}`);
+    if (!res.ok) throw new Error('API Error');
+    const data = await res.json();
+    state.speciesCache[id] = data;
+    return data;
+  } catch (err) {
+    console.error(`Failed to fetch Species ${id}`, err);
+    return null;
+  }
+}
+
 function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -166,8 +186,9 @@ function getUnusedId() {
   return id;
 }
 
-function formatName(name) {
-  return name.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+function getKoreanName(species) {
+  const nameObj = species.names.find(n => n.language.name === 'ko');
+  return nameObj ? nameObj.name : species.name;
 }
 
 // --- Game Flow ---
@@ -180,7 +201,8 @@ async function startGame() {
     maxStreak: 0,
     correctCount: 0,
     usedIds: [],
-    isAnswered: false
+    isAnswered: false,
+    hintUsed: false
   };
   
   updateHeader();
@@ -192,6 +214,7 @@ async function startGame() {
 async function loadRound() {
   state.currentRound++;
   state.isAnswered = false;
+  state.hintUsed = false;
   state.timeLeft = TIME_LIMIT;
   updateHeader();
 
@@ -200,14 +223,25 @@ async function loadRound() {
   els.nextBtnWrap.classList.remove('show');
   els.choices.innerHTML = '<div style="font-size:8px;color:var(--green-dim);text-align:center;padding:30px;grid-column:1/-1" class="loading-dots">데이터 통신 중</div>';
   els.playCryBtn.disabled = true;
+  els.hintBtn.disabled = false;
+  els.hintBtn.style.opacity = '1';
   els.pokemonSprite.className = 'pokemon-sprite hidden-sprite';
+  els.pokemonSprite.style.opacity = '0';
+  els.unknownIcon.style.display = 'block';
   els.pokemonSprite.src = '';
 
   try {
     const answerId = getUnusedId();
-    state.currentPokemon = await fetchPokemon(answerId);
+    // Parallel fetch for speed
+    const [pokemon, species] = await Promise.all([
+      fetchPokemon(answerId),
+      fetchSpecies(answerId)
+    ]);
     
-    if (!state.currentPokemon) throw new Error('No Pokemon data');
+    state.currentPokemon = pokemon;
+    state.currentSpecies = species;
+    
+    if (!pokemon || !species) throw new Error('No Pokemon data');
 
     // Pick 3 wrong options
     const wrongIds = new Set();
@@ -216,7 +250,13 @@ async function loadRound() {
       if (wid !== answerId) wrongIds.add(wid);
     }
     
-    const wrongPokemon = await Promise.all([...wrongIds].map(id => fetchPokemon(id)));
+    // Fetch wrong options data (pokemon + species)
+    const wrongDataPromises = [...wrongIds].map(async id => {
+        const [p, s] = await Promise.all([fetchPokemon(id), fetchSpecies(id)]);
+        return { pokemon: p, species: s };
+    });
+    
+    const wrongData = await Promise.all(wrongDataPromises);
 
     // Set sprite and cry
     const sprite = state.currentPokemon.sprites?.other?.['official-artwork']?.front_default
@@ -227,18 +267,16 @@ async function loadRound() {
     
     if (!state.crySrc) {
       console.warn(`No cry found for ${state.currentPokemon.name}`);
-      // Fallback or skip? Let's try to reload if it's critical, 
-      // but for now we'll just show a warning.
     }
 
     // Build choices
     const options = [
-      { name: state.currentPokemon.name, correct: true },
-      ...wrongPokemon.map(p => ({ name: p.name, correct: false }))
+      { name: getKoreanName(state.currentSpecies), correct: true },
+      ...wrongData.map(d => ({ name: getKoreanName(d.species), correct: false }))
     ].sort(() => Math.random() - 0.5);
 
     els.choices.innerHTML = options.map(opt => 
-      `<button class="choice-btn" data-correct="${opt.correct}">${formatName(opt.name)}</button>`
+      `<button class="choice-btn" data-correct="${opt.correct}">${opt.name}</button>`
     ).join('');
 
     // Attach events to choices
@@ -303,6 +341,22 @@ function stopCry() {
   els.playCryBtn.disabled = true;
 }
 
+// --- Hint System ---
+function useHint() {
+  if (state.isAnswered || state.hintUsed) return;
+  state.hintUsed = true;
+  state.score = Math.max(0, state.score - 5); // Deduct points
+  updateHeader();
+  
+  // Reveal silhouette (still black)
+  els.pokemonSprite.style.opacity = '1'; 
+  els.unknownIcon.style.display = 'none';
+  
+  els.hintBtn.disabled = true;
+  els.hintBtn.style.opacity = '0.5';
+}
+
+
 // --- Timer ---
 function startTimer() {
   clearInterval(state.timerInterval);
@@ -354,6 +408,7 @@ function handleAnswer(btn, correct) {
 
   revealPokemon();
   disableChoices();
+  els.hintBtn.disabled = true; // Disable hint if game over
   updateHeader();
   els.nextBtnWrap.classList.add('show');
 }
@@ -371,7 +426,7 @@ function handleTimeUp() {
 }
 
 function highlightCorrect() {
-  const correctName = formatName(state.currentPokemon.name);
+  const correctName = getKoreanName(state.currentSpecies);
   els.choices.querySelectorAll('.choice-btn').forEach(btn => {
     if (btn.textContent === correctName) {
       btn.classList.add('correct');
@@ -384,12 +439,14 @@ function disableChoices() {
 }
 
 function revealPokemon() {
+  els.pokemonSprite.style.opacity = '1'; // Ensure visible
+  els.unknownIcon.style.display = 'none';
   els.pokemonSprite.classList.remove('hidden-sprite');
   els.pokemonSprite.classList.add('revealed');
 }
 
 function showResult(correct, msg) {
-  const name = formatName(state.currentPokemon.name);
+  const name = getKoreanName(state.currentSpecies);
   els.resultMsg.textContent = `${msg} — 정답은 [ ${name} ]`;
   els.resultMsg.className = `result-msg show ${correct ? 'correct-msg' : 'wrong-msg'}`;
 }

@@ -14,6 +14,8 @@ A retro-styled web game where players listen to Pokemon cries and guess which Po
     - 15-second time limit per round.
     - Scoring based on speed.
     - Consecutive answer streaks.
+    - **Hint System:** Silhouette is hidden by default; player can choose to reveal it.
+    - **Localization:** Pokemon names displayed in Korean.
 - **Visuals & Sound:**
     - Pokemon silhouettes that reveal on answer.
     - Animated audio waveforms.

@@ -62,8 +62,13 @@
       <div class="pokemon-area">
         <div class="silhouette-wrap">
           <div class="scan-ring" id="scanRing"></div>
-          <img class="pokemon-sprite hidden-sprite" id="pokemonSprite" src="" alt="포켓몬">
+          <img class="pokemon-sprite hidden-sprite" id="pokemonSprite" src="" alt="포켓몬" style="opacity:0">
+          <div id="unknownIcon" style="position:absolute;font-size:40px;color:var(--green-dim);">?</div>
         </div>
+
+        <button class="px-btn hint-btn" id="hintBtn" style="margin-bottom:16px;padding:8px;width:auto;font-size:8px;background:transparent;border:1px solid var(--green-dim);color:var(--green-dim);">
+          💡 힌트 보기 (-5점)
+        </button>
 
         <div class="waveform" id="waveform"></div>
 
