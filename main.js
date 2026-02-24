@@ -1,18 +1,18 @@
 /**
- * PokeCry: Pokemon Cry Quiz Game
- * Core Logic - Optimized for High Quality & Stability
+ * POKECRYING GAME
+ * Updated Logic with History, Ranking, and Background Animation
  */
 
 // --- Configuration ---
 const ROUNDS = 10;
 const TIME_LIMIT = 15;
 const DIFFICULTIES = {
-  1: { maxId: 151, label: 'CLASSIC (1세대)' },
-  2: { maxId: 251, label: 'JOHTO (1~2세대)' },
-  3: { maxId: 386, label: 'HOENN (1~3세대)' }
+  1: { maxId: 151, label: 'EASY' },
+  2: { maxId: 251, label: 'NORMAL' },
+  3: { maxId: 386, label: 'HARD' }
 };
 
-// --- State Management ---
+// --- State ---
 let state = {
   difficulty: 1,
   maxId: 151,
@@ -36,15 +36,30 @@ let state = {
 
 // --- DOM Elements ---
 const els = {
+  body: document.getElementById('gameBody'),
   screens: document.querySelectorAll('.screen'),
+  bgContainer: document.getElementById('bgPokemonContainer'),
+  
+  // Navigation
+  navLinks: document.querySelectorAll('.nav-link'),
+  
+  // Screens
+  screenStart: document.getElementById('screenStart'),
+  screenGame: document.getElementById('screenGame'),
+  screenEnd: document.getElementById('screenEnd'),
+  screenHistory: document.getElementById('screenHistory'),
+  screenRanking: document.getElementById('screenRanking'),
+  
+  // UI Containers
+  startUI: document.getElementById('startUI'),
+  gameUI: document.getElementById('gameUI'),
+  endUI: document.getElementById('endUI'),
+
+  // Game Elements
   headerScore: document.getElementById('headerScore'),
-  headerRound: document.getElementById('headerRound'),
   timerBar: document.getElementById('timerBar'),
-  timerLabel: document.getElementById('timerLabel'),
   pokemonSprite: document.getElementById('pokemonSprite'),
   unknownIcon: document.getElementById('unknownIcon'),
-  scanRing: document.getElementById('scanRing'),
-  waveform: document.getElementById('waveform'),
   playCryBtn: document.getElementById('playCryBtn'),
   hintBtn: document.getElementById('hintBtn'),
   choices: document.getElementById('choices'),
@@ -56,141 +71,106 @@ const els = {
   // Stats
   finalScore: document.getElementById('finalScore'),
   finalGrade: document.getElementById('finalGrade'),
-  statCorrect: document.getElementById('statCorrect'),
-  statStreak: document.getElementById('statStreak'),
   statRank: document.getElementById('statRank'),
-  statDiff: document.getElementById('statDiff'),
+  statStreak: document.getElementById('statStreak'),
+  historyList: document.getElementById('historyList'),
+  rankingList: document.getElementById('rankingList'),
 
   // Buttons
   startBtn: document.getElementById('startBtn'),
   nextBtn: document.getElementById('nextBtn'),
   restartBtn: document.getElementById('restartBtn'),
-  goStartBtn: document.getElementById('goStartBtn'),
   diffBtns: document.querySelectorAll('.diff-btn'),
 
-  // UI Layers
-  startUI: document.getElementById('startUI'),
-  gameUI: document.getElementById('gameUI'),
-  endUI: document.getElementById('endUI')
+  // Modals
+  openTerms: document.getElementById('openTerms'),
+  openPrivacy: document.getElementById('openPrivacy'),
+  modalTerms: document.getElementById('modalTerms'),
+  modalPrivacy: document.getElementById('modalPrivacy')
 };
 
 // --- Initialization ---
 function init() {
   setupEventListeners();
+  initBackgroundAnimation();
 }
 
 function setupEventListeners() {
   els.startBtn.addEventListener('click', startGame);
   els.nextBtn.addEventListener('click', nextRound);
-  els.restartBtn.addEventListener('click', startGame);
-  els.goStartBtn.addEventListener('click', () => showScreen('screenStart'));
+  els.restartBtn.addEventListener('click', () => showScreen('screenStart'));
   els.playCryBtn.addEventListener('click', playCry);
   els.hintBtn.addEventListener('click', useHint);
 
+  // Difficulty
   els.diffBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      const diff = parseInt(btn.dataset.diff);
-      setDifficulty(diff);
+      state.difficulty = parseInt(btn.dataset.diff);
+      state.maxId = DIFFICULTIES[state.difficulty].maxId;
       els.diffBtns.forEach(b => b.classList.toggle('selected', b === btn));
     });
   });
+
+  // Navigation
+  document.getElementById('navHome').addEventListener('click', () => showScreen('screenStart'));
+  document.getElementById('navHistory').addEventListener('click', showHistory);
+  document.getElementById('navRanking').addEventListener('click', showRanking);
+
+  // Modals
+  els.openTerms.addEventListener('click', () => els.modalTerms.style.display = 'flex');
+  els.openPrivacy.addEventListener('click', () => els.modalPrivacy.style.display = 'flex');
+  
+  document.querySelectorAll('.modal-close').forEach(btn => {
+    btn.addEventListener('click', (e) => e.target.closest('.modal-overlay').style.display = 'none');
+  });
+
+  window.addEventListener('click', (e) => {
+    if (e.target.classList.contains('modal-overlay')) e.target.style.display = 'none';
+  });
 }
 
-// --- Navigation ---
+// --- Background Animation ---
+function initBackgroundAnimation() {
+  const ids = [1, 4, 7, 25, 39, 52, 94, 131, 133, 143, 150];
+  setInterval(() => {
+    spawnBackgroundPokemon(ids[Math.floor(Math.random() * ids.length)]);
+  }, 3000);
+}
+
+function spawnBackgroundPokemon(id) {
+  const sprite = document.createElement('img');
+  sprite.className = 'bg-sprite';
+  sprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+  
+  const startX = Math.random() * window.innerWidth;
+  const startY = Math.random() * window.innerHeight;
+  const moveX = (Math.random() - 0.5) * 400;
+  const moveY = (Math.random() - 0.5) * 400;
+  
+  sprite.style.left = startX + 'px';
+  sprite.style.top = startY + 'px';
+  sprite.style.setProperty('--move-x', moveX + 'px');
+  sprite.style.setProperty('--move-y', moveY + 'px');
+  
+  els.bgContainer.appendChild(sprite);
+  setTimeout(() => sprite.remove(), 20000);
+}
+
+// --- Navigation Logic ---
 function showScreen(id) {
   els.screens.forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 
-  // Toggle external UI layers
+  // Toggle External UI
   els.startUI.classList.toggle('hidden', id !== 'screenStart');
   els.gameUI.classList.toggle('hidden', id !== 'screenGame');
   els.endUI.classList.toggle('hidden', id !== 'screenEnd');
+
+  // Hide Title/Info during game
+  els.body.classList.toggle('game-started', id === 'screenGame');
 }
 
-// --- Difficulty ---
-function setDifficulty(d) {
-  state.difficulty = d;
-  state.maxId = DIFFICULTIES[d].maxId;
-}
-
-// --- Waveform Decor ---
-function buildWaveform() {
-  if (!els.waveform) return;
-  els.waveform.innerHTML = '';
-  for (let i = 0; i < 24; i++) {
-    const bar = document.createElement('div');
-    bar.className = 'wave-bar';
-    bar.style.setProperty('--dur', (0.4 + Math.random() * 0.4) + 's');
-    bar.style.setProperty('--max', (15 + Math.random() * 25) + 'px');
-    els.waveform.appendChild(bar);
-  }
-}
-
-function setWaveActive(active) {
-  const bars = els.waveform.querySelectorAll('.wave-bar');
-  bars.forEach((b, i) => {
-    if (active) {
-      b.classList.add('active');
-      b.style.animationDelay = (i * 0.04) + 's';
-    } else {
-      b.classList.remove('active');
-      b.style.height = '4px';
-    }
-  });
-  els.scanRing.classList.toggle('playing', active);
-}
-
-// --- Data Fetching ---
-async function fetchPokemon(id) {
-  if (state.cache[id]) return state.cache[id];
-  try {
-    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
-    if (!res.ok) throw new Error('API Error');
-    const data = await res.json();
-    state.cache[id] = data;
-    return data;
-  } catch (err) {
-    console.error(`Failed to fetch Pokemon ${id}`, err);
-    return null;
-  }
-}
-
-async function fetchSpecies(id) {
-  if (state.speciesCache[id]) return state.speciesCache[id];
-  try {
-    const res = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}`);
-    if (!res.ok) throw new Error('API Error');
-    const data = await res.json();
-    state.speciesCache[id] = data;
-    return data;
-  } catch (err) {
-    console.error(`Failed to fetch Species ${id}`, err);
-    return null;
-  }
-}
-
-function randInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function getUnusedId() {
-  let id;
-  let attempts = 0;
-  do {
-    id = randInt(1, state.maxId);
-    attempts++;
-  } while (state.usedIds.includes(id) && attempts < 100);
-  state.usedIds.push(id);
-  return id;
-}
-
-function getKoreanName(species) {
-  if (!species) return '???';
-  const nameObj = species.names.find(n => n.language.name === 'ko');
-  return nameObj ? nameObj.name : species.name;
-}
-
-// --- Game Flow ---
+// --- Game Logic ---
 async function startGame() {
   state = {
     ...state,
@@ -204,9 +184,7 @@ async function startGame() {
     hintUsed: false
   };
   
-  updateHeader();
   showScreen('screenGame');
-  buildWaveform();
   await loadRound();
 }
 
@@ -215,257 +193,193 @@ async function loadRound() {
   state.isAnswered = false;
   state.hintUsed = false;
   state.timeLeft = TIME_LIMIT;
-  updateHeader();
 
   // Reset UI
-  els.resultMsg.style.display = 'none';
-  els.resultMsg.className = 'result-msg';
+  els.resultMsg.textContent = '';
   els.nextBtnWrap.classList.add('hidden');
-  els.choices.innerHTML = '<div style="font-size:12px;color:var(--gb-dark);text-align:center;padding:30px;grid-column:1/-1">데이터 통신 중...</div>';
-  els.playCryBtn.disabled = true;
-  els.hintBtn.disabled = false;
-  els.hintBtn.style.opacity = '1';
+  els.choices.innerHTML = '<div style="font-size:10px; text-align:center; width:100%;">LOADING...</div>';
   els.pokemonSprite.className = 'pokemon-sprite hidden-sprite';
   els.pokemonSprite.style.opacity = '0';
-  els.unknownIcon.classList.remove('hidden');
-  els.pokemonSprite.src = '';
+  els.unknownIcon.style.display = 'block';
 
   try {
     const answerId = getUnusedId();
-    const [pokemon, species] = await Promise.all([
-      fetchPokemon(answerId),
-      fetchSpecies(answerId)
-    ]);
+    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${answerId}`);
+    const data = await res.json();
+    state.currentPokemon = data;
     
-    state.currentPokemon = pokemon;
-    state.currentSpecies = species;
+    const speciesRes = await fetch(data.species.url);
+    state.currentSpecies = await speciesRes.json();
     
-    if (!pokemon || !species) throw new Error('No Pokemon data');
+    // Cry & Sprite
+    state.crySrc = data.cries.latest || data.cries.legacy;
+    els.pokemonSprite.src = data.sprites.other['official-artwork'].front_default || data.sprites.front_default;
 
-    const wrongIds = new Set();
-    while (wrongIds.size < 3) {
-      const wid = randInt(1, state.maxId);
-      if (wid !== answerId) wrongIds.add(wid);
+    // Build Choices
+    const options = [getKoreanName(state.currentSpecies)];
+    while(options.length < 4) {
+      const rid = Math.floor(Math.random() * state.maxId) + 1;
+      if (rid !== answerId) {
+        const rRes = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${rid}`);
+        const rData = await rRes.json();
+        const rName = getKoreanName(rData);
+        if (!options.includes(rName)) options.push(rName);
+      }
     }
-    
-    const wrongDataPromises = [...wrongIds].map(async id => {
-        const [p, s] = await Promise.all([fetchPokemon(id), fetchSpecies(id)]);
-        return { pokemon: p, species: s };
-    });
-    
-    const wrongData = await Promise.all(wrongDataPromises);
-
-    const sprite = state.currentPokemon.sprites?.other?.['official-artwork']?.front_default
-                 || state.currentPokemon.sprites?.front_default;
-    els.pokemonSprite.src = sprite || 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png';
-    
-    state.crySrc = state.currentPokemon.cries?.latest || state.currentPokemon.cries?.legacy;
-
-    const options = [
-      { name: getKoreanName(state.currentSpecies), correct: true },
-      ...wrongData.map(d => ({ name: getKoreanName(d.species), correct: false }))
-    ].sort(() => Math.random() - 0.5);
+    options.sort(() => Math.random() - 0.5);
 
     els.choices.innerHTML = options.map(opt => 
-      `<button class="choice-btn" data-correct="${opt.correct}">${opt.name}</button>`
+      `<button class="choice-btn" data-correct="${opt === getKoreanName(state.currentSpecies)}">${opt}</button>`
     ).join('');
 
     els.choices.querySelectorAll('.choice-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => handleAnswer(e.currentTarget, btn.dataset.correct === 'true'));
+      btn.addEventListener('click', (e) => handleAnswer(e.target, btn.dataset.correct === 'true'));
     });
 
-    els.playCryBtn.disabled = false;
-    setTimeout(() => { if (!state.isAnswered) playCry(); }, 600);
     startTimer();
+    playCry();
 
   } catch (err) {
     console.error(err);
-    els.choices.innerHTML = '<div style="font-size:12px;color:var(--error);text-align:center;grid-column:1/-1">연결 실패. 재시도 중...</div>';
-    setTimeout(() => {
-      state.usedIds.pop();
-      state.currentRound--;
-      loadRound();
-    }, 2000);
+    loadRound();
   }
 }
 
-// --- Sound ---
-function playCry() {
-  if (!state.crySrc) return;
-  if (state.audio) { state.audio.pause(); state.audio.currentTime = 0; }
-  
-  state.audio = new Audio(state.crySrc);
-  state.audio.volume = 0.6;
-  setWaveActive(true);
-  els.playCryBtn.disabled = true;
-  
-  state.audio.play().catch(err => console.error("Audio failed", err));
-  state.audio.onended = () => {
-    setWaveActive(false);
-    if (!state.isAnswered) els.playCryBtn.disabled = false;
-  };
-}
-
-function stopCry() {
-  if (state.audio) { state.audio.pause(); state.audio.currentTime = 0; }
-  setWaveActive(false);
-  els.playCryBtn.disabled = true;
-}
-
-// --- Hint ---
-function useHint() {
-  if (state.isAnswered || state.hintUsed) return;
-  state.hintUsed = true;
-  state.score = Math.max(0, state.score - 5);
-  updateHeader();
-  
-  els.pokemonSprite.style.opacity = '1'; 
-  els.unknownIcon.classList.add('hidden');
-  els.hintBtn.disabled = true;
-  els.hintBtn.style.opacity = '0.5';
-}
-
-// --- Timer ---
-function startTimer() {
-  clearInterval(state.timerInterval);
-  state.timeLeft = TIME_LIMIT;
-  updateTimerUI();
-  
-  state.timerInterval = setInterval(() => {
-    state.timeLeft -= 0.1;
-    if (state.timeLeft <= 0) {
-      state.timeLeft = 0;
-      updateTimerUI();
-      clearInterval(state.timerInterval);
-      if (!state.isAnswered) handleTimeUp();
-    } else {
-      updateTimerUI();
-    }
-  }, 100);
-}
-
-function updateTimerUI() {
-  const pct = (state.timeLeft / TIME_LIMIT) * 100;
-  els.timerBar.style.width = pct + '%';
-  els.timerLabel.textContent = Math.ceil(state.timeLeft) + 'S';
-}
-
-// --- Game Logic ---
 function handleAnswer(btn, correct) {
   if (state.isAnswered) return;
   state.isAnswered = true;
   clearInterval(state.timerInterval);
-  stopCry();
 
   if (correct) {
-    const points = Math.max(10, Math.round(state.timeLeft * 10));
+    const points = Math.round(state.timeLeft * 10);
     state.score += points;
     state.streak++;
     state.correctCount++;
     state.maxStreak = Math.max(state.maxStreak, state.streak);
-    btn.classList.add('correct');
-    showResult(true, `정답! +${points}점`);
+    btn.style.background = 'var(--primary)';
+    els.resultMsg.textContent = '정답입니다!';
     showStreak();
   } else {
     state.streak = 0;
-    btn.classList.add('wrong');
-    showResult(false, '아쉽네요... 오답!');
+    btn.style.background = 'var(--error)';
+    els.resultMsg.textContent = `틀렸습니다! 정답은 ${getKoreanName(state.currentSpecies)}`;
     highlightCorrect();
   }
 
   revealPokemon();
-  disableChoices();
-  els.hintBtn.disabled = true;
-  updateHeader();
   els.nextBtnWrap.classList.remove('hidden');
 }
 
-function handleTimeUp() {
-  state.isAnswered = true;
-  stopCry();
-  state.streak = 0;
-  showResult(false, '시간 초과!');
-  revealPokemon();
-  highlightCorrect();
-  disableChoices();
-  updateHeader();
-  els.nextBtnWrap.classList.remove('hidden');
+function revealPokemon() {
+  els.pokemonSprite.style.opacity = '1';
+  els.pokemonSprite.classList.remove('hidden-sprite');
+  els.unknownIcon.style.display = 'none';
 }
 
 function highlightCorrect() {
   const correctName = getKoreanName(state.currentSpecies);
   els.choices.querySelectorAll('.choice-btn').forEach(btn => {
-    if (btn.textContent === correctName) btn.classList.add('correct');
+    if (btn.textContent === correctName) btn.style.background = 'var(--primary)';
   });
-}
-
-function disableChoices() {
-  els.choices.querySelectorAll('.choice-btn').forEach(btn => btn.disabled = true);
-}
-
-function revealPokemon() {
-  els.pokemonSprite.style.opacity = '1';
-  els.unknownIcon.classList.add('hidden');
-  els.pokemonSprite.classList.remove('hidden-sprite');
-}
-
-function showResult(correct, msg) {
-  const name = getKoreanName(state.currentSpecies);
-  els.resultMsg.textContent = `${msg} [ 정답: ${name} ]`;
-  els.resultMsg.style.display = 'block';
-  els.resultMsg.classList.add('show', correct ? 'correct-msg' : 'wrong-msg');
 }
 
 function showStreak() {
   if (state.streak < 2) return;
   els.streakCount.textContent = state.streak;
   els.streakBadge.style.display = 'block';
-  setTimeout(() => { els.streakBadge.style.display = 'none'; }, 2500);
+  setTimeout(() => els.streakBadge.style.display = 'none', 2000);
 }
 
-function updateHeader() {
-  els.headerScore.textContent = state.score;
-  els.headerRound.textContent = state.currentRound || '-';
+function startTimer() {
+  clearInterval(state.timerInterval);
+  state.timeLeft = TIME_LIMIT;
+  els.timerInterval = setInterval(() => {
+    state.timeLeft -= 0.1;
+    els.timerBar.style.width = (state.timeLeft / TIME_LIMIT) * 100 + '%';
+    if (state.timeLeft <= 0) {
+      clearInterval(state.timerInterval);
+      handleAnswer(null, false);
+    }
+  }, 100);
+}
+
+function playCry() {
+  if (state.audio) state.audio.pause();
+  state.audio = new Audio(state.crySrc);
+  state.audio.volume = 0.5;
+  state.audio.play();
+}
+
+function useHint() {
+  if (state.isAnswered) return;
+  els.pokemonSprite.style.opacity = '0.3';
+  els.unknownIcon.style.display = 'none';
+  state.score = Math.max(0, state.score - 5);
 }
 
 function nextRound() {
-  if (state.currentRound >= ROUNDS) {
-    endGame();
-  } else {
+  if (state.currentRound < ROUNDS) {
     loadRound();
+  } else {
+    endGame();
   }
 }
 
-// --- Ranking ---
-function calculateRank(score) {
-  if (score >= 1400) return '0.1%';
-  if (score >= 1200) return '1%';
-  if (score >= 1000) return '5%';
-  if (score >= 800) return '10%';
-  if (score >= 600) return '20%';
-  if (score >= 400) return '40%';
-  if (score >= 200) return '60%';
-  return '90%';
+function getKoreanName(species) {
+  const nameObj = species.names.find(n => n.language.name === 'ko');
+  return nameObj ? nameObj.name : species.name;
+}
+
+function getUnusedId() {
+  let id;
+  do { id = Math.floor(Math.random() * state.maxId) + 1; }
+  while (state.usedIds.includes(id));
+  state.usedIds.push(id);
+  return id;
+}
+
+// --- History & Ranking ---
+function saveGame() {
+  const history = JSON.parse(localStorage.getItem('pokeHistory') || '[]');
+  const newGame = {
+    date: new Date().toLocaleDateString(),
+    score: state.score,
+    correct: state.correctCount
+  };
+  history.unshift(newGame);
+  localStorage.setItem('pokeHistory', JSON.stringify(history.slice(0, 10)));
+  
+  const ranking = JSON.parse(localStorage.getItem('pokeRanking') || '[]');
+  ranking.push({ score: state.score, date: new Date().toLocaleDateString() });
+  ranking.sort((a, b) => b.score - a.score);
+  localStorage.setItem('pokeRanking', JSON.stringify(ranking.slice(0, 5)));
+}
+
+function showHistory() {
+  showScreen('screenHistory');
+  const history = JSON.parse(localStorage.getItem('pokeHistory') || '[]');
+  els.historyList.innerHTML = history.length ? history.map(h => 
+    `<div style="margin-bottom:5px;">${h.date}: ${h.score}점 (${h.correct}/10)</div>`
+  ).join('') : '기록이 없습니다.';
+}
+
+function showRanking() {
+  showScreen('screenRanking');
+  const ranking = JSON.parse(localStorage.getItem('pokeRanking') || '[]');
+  els.rankingList.innerHTML = ranking.length ? ranking.map((r, i) => 
+    `<div style="margin-bottom:5px;">${i+1}위: ${r.score}점 (${r.date})</div>`
+  ).join('') : '순위 정보가 없습니다.';
 }
 
 function endGame() {
+  saveGame();
   showScreen('screenEnd');
   els.finalScore.textContent = `${state.score} PTS`;
-
+  els.statRank.textContent = `${Math.floor(Math.random() * 50) + 1}%`;
+  els.statStreak.textContent = state.maxStreak;
+  
   const pct = state.correctCount / ROUNDS;
-  let grade, color;
-  if (pct >= 0.9) { grade = '🏆 전설의 마스터'; color = '#059669'; }
-  else if (pct >= 0.7) { grade = '⭐ 일류 트레이너'; color = '#059669'; }
-  else if (pct >= 0.5) { grade = '🌱 견습 트레이너'; color = '#d97706'; }
-  else { grade = '😅 더 노력하세요!'; color = '#dc2626'; }
-
-  els.finalGrade.textContent = grade;
-  els.finalGrade.style.color = color;
-  els.statRank.textContent = calculateRank(state.score);
-  els.statCorrect.textContent = `${state.correctCount} / ${ROUNDS}`;
-  els.statStreak.textContent = `${state.maxStreak} Combo`;
-  els.statDiff.textContent = DIFFICULTIES[state.difficulty].label;
+  els.finalGrade.textContent = pct >= 0.9 ? '마스터 트레이너' : pct >= 0.7 ? '에이스 트레이너' : '신입 트레이너';
 }
 
-// --- Start ---
 init();
