@@ -1,6 +1,6 @@
 /**
  * POKECRYING GAME
- * Updated Logic: Synchronized Timer with Audio Loading
+ * Fix: Second round bugs (Click lock, Timer sync)
  */
 
 const ROUNDS = 10;
@@ -24,7 +24,7 @@ let state = {
   currentSpecies: null,
   timeLeft: TIME_LIMIT,
   timerInterval: null,
-  isAnswered: false,
+  isAnswered: true, // Initial lock
   hintUsed: false,
   audio: null,
   crySrc: '',
@@ -82,22 +82,18 @@ function setupEventListeners() {
     });
   });
 
-  document.getElementById('navHome').addEventListener('click', () => {
-    stopCry();
-    showScreen('screenStart');
-  });
-  document.getElementById('navHistory').addEventListener('click', () => {
-    stopCry();
-    showHistory();
-  });
-  document.getElementById('navRanking').addEventListener('click', () => {
-    stopCry();
-    showRanking();
-  });
+  document.getElementById('navHome').addEventListener('click', () => { stopEverything(); showScreen('screenStart'); });
+  document.getElementById('navHistory').addEventListener('click', () => { stopEverything(); showHistory(); });
+  document.getElementById('navRanking').addEventListener('click', () => { stopEverything(); showRanking(); });
 
   document.getElementById('openTerms').addEventListener('click', () => els.modalTerms.style.display = 'flex');
   document.getElementById('openPrivacy').addEventListener('click', () => els.modalPrivacy.style.display = 'flex');
   document.querySelectorAll('.modal-close').forEach(btn => btn.addEventListener('click', (e) => e.target.closest('.modal-overlay').style.display = 'none'));
+}
+
+function stopEverything() {
+  clearInterval(state.timerInterval);
+  if (state.audio) state.audio.pause();
 }
 
 function initBackgroundRows() {
@@ -113,7 +109,7 @@ function initBackgroundRows() {
 }
 
 function showScreen(id) {
-  clearInterval(state.timerInterval);
+  stopEverything();
   els.screens.forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   els.startUI.classList.toggle('hidden', id !== 'screenStart');
@@ -124,18 +120,19 @@ function showScreen(id) {
 }
 
 async function startGame() {
-  state = { ...state, currentRound: 0, score: 0, streak: 0, maxStreak: 0, correctCount: 0, usedIds: [], isAnswered: false, hintUsed: false };
+  state = { ...state, currentRound: 0, score: 0, streak: 0, maxStreak: 0, correctCount: 0, usedIds: [], isAnswered: true, hintUsed: false };
   showScreen('screenGame');
   await loadRound();
 }
 
 async function loadRound() {
-  state.currentRound++;
-  state.isAnswered = true; // Temporary lock until audio ready
+  // CRITICAL: Reset state and clear timer immediately
+  stopEverything();
+  state.isAnswered = true; 
   state.hintUsed = false;
   state.timeLeft = TIME_LIMIT;
+  
   updateHeader();
-
   els.timerBar.style.width = '100%';
   els.resultMsg.style.display = 'none';
   els.nextBtnWrap.classList.add('hidden');
@@ -145,6 +142,7 @@ async function loadRound() {
   els.unknownIcon.style.display = 'block';
   els.hintBtn.disabled = true;
   els.hintBtn.style.opacity = '0.5';
+  els.playCryBtn.disabled = true;
 
   try {
     const answerId = getUnusedId();
@@ -165,7 +163,6 @@ async function loadRound() {
     while(options.length < 4) {
       const rid = Math.floor(Math.random() * state.maxId) + 1;
       if (state.usedIds.includes(rid)) continue;
-      
       const rRes = await fetch(`https://pokeapi.co/api/v2/pokemon/${rid}`);
       const rData = await rRes.json();
       const rsRes = await fetch(rData.species.url);
@@ -177,8 +174,37 @@ async function loadRound() {
 
     els.choices.innerHTML = options.map(opt => `<button class="choice-btn" data-correct="${opt === answerName}">${opt}</button>`).join('');
     
-    // Preparation complete, wait for audio
-    prepareAudio();
+    // Attach listeners immediately, but state.isAnswered will control execution
+    els.choices.querySelectorAll('.choice-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => handleAnswer(e.currentTarget, btn.dataset.correct === 'true'));
+    });
+
+    // Prepare and Wait for Audio
+    if (state.audio) state.audio.pause();
+    state.audio = new Audio(state.crySrc);
+    state.audio.volume = 0.5;
+
+    state.audio.oncanplaythrough = () => {
+      if (state.isAnswered && state.timeLeft === TIME_LIMIT) {
+        state.isAnswered = false; // UNLOCK
+        els.hintBtn.disabled = false;
+        els.hintBtn.style.opacity = '1';
+        els.playCryBtn.disabled = false;
+        playCry();
+        startTimer();
+      }
+    };
+
+    // Backup unlock if audio stalls
+    setTimeout(() => {
+      if (state.isAnswered && state.screens[1].classList.contains('active')) {
+        state.isAnswered = false;
+        els.hintBtn.disabled = false;
+        els.hintBtn.style.opacity = '1';
+        els.playCryBtn.disabled = false;
+        startTimer();
+      }
+    }, 4000);
 
   } catch (err) {
     console.error(err);
@@ -186,49 +212,10 @@ async function loadRound() {
   }
 }
 
-function prepareAudio() {
-  if (state.audio) state.audio.pause();
-  state.audio = new Audio(state.crySrc);
-  state.audio.volume = 0.5;
-
-  // Key change: Start game only when audio is ready to play
-  state.audio.oncanplaythrough = () => {
-    if (state.isAnswered && state.timeLeft === TIME_LIMIT) {
-      state.isAnswered = false; // Unlock game
-      els.hintBtn.disabled = false;
-      els.hintBtn.style.opacity = '1';
-      els.playCryBtn.disabled = false;
-      
-      els.choices.querySelectorAll('.choice-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => handleAnswer(e.currentTarget, btn.dataset.correct === 'true'));
-      });
-
-      playCry();
-      startTimer();
-    }
-  };
-
-  state.audio.onerror = () => {
-    console.warn("Audio load error, skipping...");
-    loadRound();
-  };
-}
-
-function playCry() {
-  if (!state.audio) return;
-  state.audio.currentTime = 0;
-  state.audio.play().catch(() => {});
-}
-
-function stopCry() {
-  if (state.audio) state.audio.pause();
-}
-
 function handleAnswer(btn, correct) {
   if (state.isAnswered) return;
   state.isAnswered = true;
-  clearInterval(state.timerInterval);
-  stopCry();
+  stopEverything();
 
   if (correct) {
     const points = Math.round(state.timeLeft * 10);
@@ -264,6 +251,12 @@ function startTimer() {
       handleAnswer(null, false);
     }
   }, 100);
+}
+
+function playCry() {
+  if (!state.audio) return;
+  state.audio.currentTime = 0;
+  state.audio.play().catch(() => {});
 }
 
 function useHint() {
