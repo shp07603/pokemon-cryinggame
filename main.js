@@ -1,15 +1,15 @@
 /**
  * PokeCry: Pokemon Cry Quiz Game
- * Core Logic
+ * Core Logic - Optimized for High Quality & Stability
  */
 
 // --- Configuration ---
 const ROUNDS = 10;
 const TIME_LIMIT = 15;
 const DIFFICULTIES = {
-  1: { maxId: 151, label: '입문 (1세대)' },
-  2: { maxId: 251, label: '보통 (1~2세대)' },
-  3: { maxId: 386, label: '고수 (1~3세대)' }
+  1: { maxId: 151, label: 'CLASSIC (1세대)' },
+  2: { maxId: 251, label: 'JOHTO (1~2세대)' },
+  3: { maxId: 386, label: 'HOENN (1~3세대)' }
 };
 
 // --- State Management ---
@@ -57,9 +57,8 @@ const els = {
   finalScore: document.getElementById('finalScore'),
   finalGrade: document.getElementById('finalGrade'),
   statCorrect: document.getElementById('statCorrect'),
-  statWrong: document.getElementById('statWrong'),
   statStreak: document.getElementById('statStreak'),
-  statRank: document.getElementById('statRank'), // Added Rank
+  statRank: document.getElementById('statRank'),
   statDiff: document.getElementById('statDiff'),
 
   // Buttons
@@ -67,12 +66,16 @@ const els = {
   nextBtn: document.getElementById('nextBtn'),
   restartBtn: document.getElementById('restartBtn'),
   goStartBtn: document.getElementById('goStartBtn'),
-  diffBtns: document.querySelectorAll('.diff-btn')
+  diffBtns: document.querySelectorAll('.diff-btn'),
+
+  // UI Layers
+  startUI: document.getElementById('startUI'),
+  gameUI: document.getElementById('gameUI'),
+  endUI: document.getElementById('endUI')
 };
 
 // --- Initialization ---
 function init() {
-  buildMarquee();
   setupEventListeners();
 }
 
@@ -99,13 +102,9 @@ function showScreen(id) {
   document.getElementById(id).classList.add('active');
 
   // Toggle external UI layers
-  const startUI = document.getElementById('startUI');
-  const gameUI = document.getElementById('gameUI');
-  const endUI = document.getElementById('endUI');
-
-  startUI.classList.toggle('hidden', id !== 'screenStart');
-  gameUI.classList.toggle('hidden', id !== 'screenGame');
-  endUI.classList.toggle('hidden', id !== 'screenEnd');
+  els.startUI.classList.toggle('hidden', id !== 'screenStart');
+  els.gameUI.classList.toggle('hidden', id !== 'screenGame');
+  els.endUI.classList.toggle('hidden', id !== 'screenEnd');
 }
 
 // --- Difficulty ---
@@ -114,31 +113,15 @@ function setDifficulty(d) {
   state.maxId = DIFFICULTIES[d].maxId;
 }
 
-// --- Marquee Decor ---
-function buildMarquee() {
-  const ids = [1, 4, 7, 25, 39, 52, 54, 63, 66, 94, 95, 113, 131, 133, 143, 147];
-  const inner = document.getElementById('marqueeInner');
-  const inner2 = document.getElementById('marqueeInner2');
-  
-  if (!inner || !inner2) return;
-
-  const imgs = ids.map(id => 
-    `<img class="marquee-img" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png" alt="">`
-  ).join('');
-  
-  inner.innerHTML = imgs;
-  inner2.innerHTML = imgs;
-}
-
 // --- Waveform Decor ---
 function buildWaveform() {
   if (!els.waveform) return;
   els.waveform.innerHTML = '';
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 24; i++) {
     const bar = document.createElement('div');
     bar.className = 'wave-bar';
     bar.style.setProperty('--dur', (0.4 + Math.random() * 0.4) + 's');
-    bar.style.setProperty('--max', (10 + Math.random() * 20) + 'px');
+    bar.style.setProperty('--max', (15 + Math.random() * 25) + 'px');
     els.waveform.appendChild(bar);
   }
 }
@@ -148,7 +131,7 @@ function setWaveActive(active) {
   bars.forEach((b, i) => {
     if (active) {
       b.classList.add('active');
-      b.style.animationDelay = (i * 0.05) + 's';
+      b.style.animationDelay = (i * 0.04) + 's';
     } else {
       b.classList.remove('active');
       b.style.height = '4px';
@@ -192,9 +175,11 @@ function randInt(min, max) {
 
 function getUnusedId() {
   let id;
+  let attempts = 0;
   do {
     id = randInt(1, state.maxId);
-  } while (state.usedIds.includes(id));
+    attempts++;
+  } while (state.usedIds.includes(id) && attempts < 100);
   state.usedIds.push(id);
   return id;
 }
@@ -233,20 +218,20 @@ async function loadRound() {
   updateHeader();
 
   // Reset UI
+  els.resultMsg.style.display = 'none';
   els.resultMsg.className = 'result-msg';
-  els.nextBtnWrap.classList.remove('show');
-  els.choices.innerHTML = '<div style="font-size:12px;color:var(--green-dim);text-align:center;padding:30px;grid-column:1/-1" class="loading-dots">데이터 통신 중</div>';
+  els.nextBtnWrap.classList.add('hidden');
+  els.choices.innerHTML = '<div style="font-size:12px;color:var(--gb-dark);text-align:center;padding:30px;grid-column:1/-1">데이터 통신 중...</div>';
   els.playCryBtn.disabled = true;
   els.hintBtn.disabled = false;
   els.hintBtn.style.opacity = '1';
   els.pokemonSprite.className = 'pokemon-sprite hidden-sprite';
   els.pokemonSprite.style.opacity = '0';
-  els.unknownIcon.style.display = 'block';
+  els.unknownIcon.classList.remove('hidden');
   els.pokemonSprite.src = '';
 
   try {
     const answerId = getUnusedId();
-    // Parallel fetch for speed
     const [pokemon, species] = await Promise.all([
       fetchPokemon(answerId),
       fetchSpecies(answerId)
@@ -257,14 +242,12 @@ async function loadRound() {
     
     if (!pokemon || !species) throw new Error('No Pokemon data');
 
-    // Pick 3 wrong options
     const wrongIds = new Set();
     while (wrongIds.size < 3) {
       const wid = randInt(1, state.maxId);
       if (wid !== answerId) wrongIds.add(wid);
     }
     
-    // Fetch wrong options data (pokemon + species)
     const wrongDataPromises = [...wrongIds].map(async id => {
         const [p, s] = await Promise.all([fetchPokemon(id), fetchSpecies(id)]);
         return { pokemon: p, species: s };
@@ -272,18 +255,12 @@ async function loadRound() {
     
     const wrongData = await Promise.all(wrongDataPromises);
 
-    // Set sprite and cry
     const sprite = state.currentPokemon.sprites?.other?.['official-artwork']?.front_default
                  || state.currentPokemon.sprites?.front_default;
     els.pokemonSprite.src = sprite || 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png';
     
     state.crySrc = state.currentPokemon.cries?.latest || state.currentPokemon.cries?.legacy;
-    
-    if (!state.crySrc) {
-      console.warn(`No cry found for ${state.currentPokemon.name}`);
-    }
 
-    // Build choices
     const options = [
       { name: getKoreanName(state.currentSpecies), correct: true },
       ...wrongData.map(d => ({ name: getKoreanName(d.species), correct: false }))
@@ -293,23 +270,17 @@ async function loadRound() {
       `<button class="choice-btn" data-correct="${opt.correct}">${opt.name}</button>`
     ).join('');
 
-    // Attach events to choices
     els.choices.querySelectorAll('.choice-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => handleAnswer(e.target, btn.dataset.correct === 'true'));
+      btn.addEventListener('click', (e) => handleAnswer(e.currentTarget, btn.dataset.correct === 'true'));
     });
 
     els.playCryBtn.disabled = false;
-    
-    // Auto-play cry after a short delay
-    setTimeout(() => {
-      if (!state.isAnswered) playCry();
-    }, 600);
-
+    setTimeout(() => { if (!state.isAnswered) playCry(); }, 600);
     startTimer();
 
   } catch (err) {
     console.error(err);
-    els.choices.innerHTML = '<div style="font-size:12px;color:var(--red);text-align:center;grid-column:1/-1">데이터 수신 실패. 재시도 중...</div>';
+    els.choices.innerHTML = '<div style="font-size:12px;color:var(--error);text-align:center;grid-column:1/-1">연결 실패. 재시도 중...</div>';
     setTimeout(() => {
       state.usedIds.pop();
       state.currentRound--;
@@ -321,55 +292,38 @@ async function loadRound() {
 // --- Sound ---
 function playCry() {
   if (!state.crySrc) return;
-  
-  if (state.audio) {
-    state.audio.pause();
-    state.audio.currentTime = 0;
-  }
+  if (state.audio) { state.audio.pause(); state.audio.currentTime = 0; }
   
   state.audio = new Audio(state.crySrc);
   state.audio.volume = 0.6;
-  
   setWaveActive(true);
   els.playCryBtn.disabled = true;
   
-  state.audio.play().catch(err => console.error("Audio play failed", err));
-  
+  state.audio.play().catch(err => console.error("Audio failed", err));
   state.audio.onended = () => {
-    setWaveActive(false);
-    if (!state.isAnswered) els.playCryBtn.disabled = false;
-  };
-  
-  state.audio.onerror = () => {
     setWaveActive(false);
     if (!state.isAnswered) els.playCryBtn.disabled = false;
   };
 }
 
 function stopCry() {
-  if (state.audio) {
-    state.audio.pause();
-    state.audio.currentTime = 0;
-  }
+  if (state.audio) { state.audio.pause(); state.audio.currentTime = 0; }
   setWaveActive(false);
   els.playCryBtn.disabled = true;
 }
 
-// --- Hint System ---
+// --- Hint ---
 function useHint() {
   if (state.isAnswered || state.hintUsed) return;
   state.hintUsed = true;
-  state.score = Math.max(0, state.score - 5); // Deduct points
+  state.score = Math.max(0, state.score - 5);
   updateHeader();
   
-  // Reveal silhouette (still black)
   els.pokemonSprite.style.opacity = '1'; 
-  els.unknownIcon.style.display = 'none';
-  
+  els.unknownIcon.classList.add('hidden');
   els.hintBtn.disabled = true;
   els.hintBtn.style.opacity = '0.5';
 }
-
 
 // --- Timer ---
 function startTimer() {
@@ -393,11 +347,10 @@ function startTimer() {
 function updateTimerUI() {
   const pct = (state.timeLeft / TIME_LIMIT) * 100;
   els.timerBar.style.width = pct + '%';
-  els.timerBar.className = 'timer-bar' + (pct < 30 ? ' danger' : pct < 55 ? ' warn' : '');
-  els.timerLabel.textContent = Math.ceil(state.timeLeft) + '초';
+  els.timerLabel.textContent = Math.ceil(state.timeLeft) + 'S';
 }
 
-// --- Game Interaction ---
+// --- Game Logic ---
 function handleAnswer(btn, correct) {
   if (state.isAnswered) return;
   state.isAnswered = true;
@@ -411,40 +364,38 @@ function handleAnswer(btn, correct) {
     state.correctCount++;
     state.maxStreak = Math.max(state.maxStreak, state.streak);
     btn.classList.add('correct');
-    showResult(true, `🎉 정답! +${points}점`);
+    showResult(true, `정답! +${points}점`);
     showStreak();
   } else {
     state.streak = 0;
     btn.classList.add('wrong');
-    showResult(false, '❌ 오답...');
+    showResult(false, '아쉽네요... 오답!');
     highlightCorrect();
   }
 
   revealPokemon();
   disableChoices();
-  els.hintBtn.disabled = true; // Disable hint if game over
+  els.hintBtn.disabled = true;
   updateHeader();
-  els.nextBtnWrap.classList.add('show');
+  els.nextBtnWrap.classList.remove('hidden');
 }
 
 function handleTimeUp() {
   state.isAnswered = true;
   stopCry();
   state.streak = 0;
-  showResult(false, '⏰ 시간 초과!');
+  showResult(false, '시간 초과!');
   revealPokemon();
   highlightCorrect();
   disableChoices();
   updateHeader();
-  els.nextBtnWrap.classList.add('show');
+  els.nextBtnWrap.classList.remove('hidden');
 }
 
 function highlightCorrect() {
   const correctName = getKoreanName(state.currentSpecies);
   els.choices.querySelectorAll('.choice-btn').forEach(btn => {
-    if (btn.textContent === correctName) {
-      btn.classList.add('correct');
-    }
+    if (btn.textContent === correctName) btn.classList.add('correct');
   });
 }
 
@@ -453,31 +404,23 @@ function disableChoices() {
 }
 
 function revealPokemon() {
-  els.pokemonSprite.style.opacity = '1'; // Ensure visible
-  els.unknownIcon.style.display = 'none';
+  els.pokemonSprite.style.opacity = '1';
+  els.unknownIcon.classList.add('hidden');
   els.pokemonSprite.classList.remove('hidden-sprite');
-  els.pokemonSprite.classList.add('revealed');
 }
 
 function showResult(correct, msg) {
   const name = getKoreanName(state.currentSpecies);
-  els.resultMsg.textContent = `${msg} — 정답은 [ ${name} ]`;
-  els.resultMsg.className = `result-msg show ${correct ? 'correct-msg' : 'wrong-msg'}`;
+  els.resultMsg.textContent = `${msg} [ 정답: ${name} ]`;
+  els.resultMsg.style.display = 'block';
+  els.resultMsg.classList.add('show', correct ? 'correct-msg' : 'wrong-msg');
 }
 
 function showStreak() {
   if (state.streak < 2) return;
   els.streakCount.textContent = state.streak;
   els.streakBadge.style.display = 'block';
-  
-  // Reset animation
-  els.streakBadge.style.animation = 'none';
-  els.streakBadge.offsetHeight; // trigger reflow
-  els.streakBadge.style.animation = null;
-
-  setTimeout(() => {
-    els.streakBadge.style.display = 'none';
-  }, 3000);
+  setTimeout(() => { els.streakBadge.style.display = 'none'; }, 2500);
 }
 
 function updateHeader() {
@@ -493,43 +436,34 @@ function nextRound() {
   }
 }
 
-// --- Rank Logic ---
+// --- Ranking ---
 function calculateRank(score) {
-  // Simple simulation logic based on possible max score (~150 * 10 = 1500)
-  if (score >= 1400) return '상위 0.1%';
-  if (score >= 1200) return '상위 1%';
-  if (score >= 1000) return '상위 5%';
-  if (score >= 800) return '상위 10%';
-  if (score >= 600) return '상위 20%';
-  if (score >= 400) return '상위 40%';
-  if (score >= 200) return '상위 60%';
-  return '상위 90%';
+  if (score >= 1400) return '0.1%';
+  if (score >= 1200) return '1%';
+  if (score >= 1000) return '5%';
+  if (score >= 800) return '10%';
+  if (score >= 600) return '20%';
+  if (score >= 400) return '40%';
+  if (score >= 200) return '60%';
+  return '90%';
 }
 
-// --- End Game ---
 function endGame() {
   showScreen('screenEnd');
-  els.finalScore.textContent = `${state.score}점`;
+  els.finalScore.textContent = `${state.score} PTS`;
 
   const pct = state.correctCount / ROUNDS;
   let grade, color;
-  
-  if (pct >= 0.9) { grade = '🏆 포켓몬 마스터!'; color = 'var(--green)'; }
-  else if (pct >= 0.7) { grade = '⭐ 일류 트레이너'; color = 'var(--green)'; }
-  else if (pct >= 0.5) { grade = '🌱 견습 트레이너'; color = 'var(--amber)'; }
-  else { grade = '😅 더 연습이 필요해요'; color = 'var(--red)'; }
+  if (pct >= 0.9) { grade = '🏆 전설의 마스터'; color = '#059669'; }
+  else if (pct >= 0.7) { grade = '⭐ 일류 트레이너'; color = '#059669'; }
+  else if (pct >= 0.5) { grade = '🌱 견습 트레이너'; color = '#d97706'; }
+  else { grade = '😅 더 노력하세요!'; color = '#dc2626'; }
 
   els.finalGrade.textContent = grade;
   els.finalGrade.style.color = color;
-  els.finalGrade.style.textShadow = `0 0 15px ${color}66`;
-
-  // Rank
-  const rank = calculateRank(state.score);
-  els.statRank.textContent = rank;
-
-  els.statCorrect.textContent = `${state.correctCount}문제`;
-  els.statWrong.textContent = `${ROUNDS - state.correctCount}문제`;
-  els.statStreak.textContent = `${state.maxStreak}연속`;
+  els.statRank.textContent = calculateRank(state.score);
+  els.statCorrect.textContent = `${state.correctCount} / ${ROUNDS}`;
+  els.statStreak.textContent = `${state.maxStreak} Combo`;
   els.statDiff.textContent = DIFFICULTIES[state.difficulty].label;
 }
 

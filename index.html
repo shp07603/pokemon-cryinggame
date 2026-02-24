@@ -3,10 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="포켓몬 울음소리 맞추기 퀴즈 게임! 추억의 게임보이 스타일로 즐겨보세요.">
-  <meta name="keywords" content="포켓몬, 울음소리, 퀴즈, 게임, 포켓몬스터, 레트로, 게임보이">
+  <meta name="description" content="포켓몬 울음소리 퀴즈! 당신의 포켓몬 지식을 증명하고 전설의 트레이너에 도전하세요. 1세대부터 3세대까지 모든 포켓몬 등장.">
+  <meta name="keywords" content="포켓몬, 울음소리, 퀴즈, 게임, 포켓몬스터, 레트로, 게임보이, 포켓몬 울음소리 맞추기">
   <meta name="author" content="PokeCry">
-  <title>POKÉCRY - 이 울음소리 포켓몬은?</title>
+  
+  <!-- 구글 애드센스 설정 -->
+  <meta name="google-adsense-account" content="ca-pub-7374766314401295">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7374766314401295" crossorigin="anonymous"></script>
+  
+  <title>POKÉCRY - 전설의 트레이너 도전! 포켓몬 울음소리 퀴즈</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
@@ -14,17 +19,15 @@
 </head>
 <body>
 
-  <div class="streak-badge" id="streakBadge">🔥 <span id="streakCount"></span> 연속!</div>
+  <div class="streak-badge" id="streakBadge">🔥 <span id="streakCount"></span> 연속 콤보!</div>
 
   <!-- Physical Game Boy Container -->
   <div class="gb-frame">
-    <!-- Top Details -->
     <div class="gb-header-details">
       <div class="gb-line"></div>
       <div class="gb-logo-text">DOT MATRIX WITH STEREO SOUND</div>
     </div>
 
-    <!-- Screen Bezel -->
     <div class="gb-bezel">
       <div class="gb-screen-container">
         <div class="lcd-scanline"></div>
@@ -32,8 +35,8 @@
         <!-- ── START SCREEN (Inside GB) ── -->
         <main class="screen active" id="screenStart">
           <div class="start-logo">
-            <span class="big">이 울음소리<br>포켓몬은?</span>
-            <span class="sub">소리를 듣고 이름을 맞춰보세요!</span>
+            <span class="big">POKÉCRY<br>QUEST</span>
+            <span class="sub">전설의 트레이너가 될 준비가 되셨나요?<br>오직 소리만으로 포켓몬을 식별하세요!</span>
           </div>
         </main>
 
@@ -57,7 +60,7 @@
               <div class="timer-bar-bg">
                 <div class="timer-bar" id="timerBar"></div>
               </div>
-              <div style="font-size: 6px; text-align: right; margin-top: 4px;" id="timerLabel">15s</div>
+              <div style="font-size: 8px; text-align: right; margin-top: 6px; font-weight: bold;" id="timerLabel">15S</div>
             </div>
           </div>
         </main>
@@ -65,20 +68,19 @@
         <!-- ── END SCREEN (Inside GB) ── -->
         <main class="screen" id="screenEnd">
           <div class="end-screen">
-            <div style="font-size: 7px; margin-bottom: 5px;">최종 결과</div>
+            <div style="font-size: 10px; margin-bottom: 8px; font-weight: bold;">TRAINER RANKING</div>
             <div class="final-score" id="finalScore"></div>
             <div class="final-grade" id="finalGrade"></div>
             <div class="stats-wrap">
-              <div class="stat-row"><span>정답</span><span id="statCorrect"></span></div>
-              <div class="stat-row"><span>최고 연속</span><span id="statStreak"></span></div>
-              <div class="stat-row"><span>순위</span><span id="statRank"></span></div>
+              <div class="stat-row"><span>정답 수</span><span id="statCorrect"></span></div>
+              <div class="stat-row"><span>최고 콤보</span><span id="statStreak"></span></div>
+              <div class="stat-row"><span>상위</span><span id="statRank"></span></div>
               <div class="stat-row"><span>난이도</span><span id="statDiff"></span></div>
             </div>
           </div>
         </main>
       </div>
 
-      <!-- Battery Indicator -->
       <div class="battery-area">
         <div class="battery-led"></div>
         <div class="battery-text">BATTERY</div>
@@ -87,7 +89,6 @@
 
     <!-- Physical Controls Decor -->
     <div class="gb-controls">
-      <!-- D-Pad -->
       <div class="dpad-container">
         <div class="dpad">
           <div class="dpad-h"></div>
@@ -95,7 +96,6 @@
           <div class="dpad-center"></div>
         </div>
       </div>
-      <!-- A/B Buttons -->
       <div class="buttons-container">
         <div class="gb-btn-wrap">
           <div class="gb-button"></div>
@@ -108,7 +108,6 @@
       </div>
     </div>
 
-    <!-- Start/Select Decor -->
     <div class="start-select-container">
       <div class="pill-btn-wrap">
         <div class="pill-btn"></div>
@@ -119,71 +118,82 @@
         <div class="pill-label">START</div>
       </div>
     </div>
-
-    <!-- Speaker Decor -->
-    <div class="speaker">
-      <div class="speaker-bar"></div>
-      <div class="speaker-bar"></div>
-      <div class="speaker-bar"></div>
-      <div class="speaker-bar"></div>
-      <div class="speaker-bar"></div>
-      <div class="speaker-bar"></div>
-    </div>
   </div>
 
   <!-- External Interactive Layer -->
   <div class="external-ui">
-    
-    <!-- Header Score (Outside for better visibility) -->
-    <div style="display: flex; justify-content: space-between; align-items: center; background: #fff; border: 4px solid #000; padding: 10px 20px;">
-      <span style="font-size: 10px;">SCORE</span>
-      <span id="headerScore" style="font-size: 14px; font-weight: bold;">0</span>
+    <div class="score-board">
+      <span style="font-size: 12px; font-weight: bold;">TOTAL SCORE</span>
+      <span id="headerScore" style="font-size: 20px; font-weight: bold; color: var(--gb-button);">0</span>
     </div>
 
-    <!-- ── START UI ── -->
     <div id="startUI">
-      <div class="diff-select" style="margin-bottom: 20px;">
-        <span class="diff-label">▶ 난이도 선택</span>
+      <div class="diff-select" style="margin-bottom: 25px;">
+        <span class="diff-label">▶ SELECT DIFFICULTY</span>
         <div class="diff-btns">
-          <button class="diff-btn selected" data-diff="1">1세대<br><small>입문</small></button>
-          <button class="diff-btn" data-diff="2">1-2세대<br><small>보통</small></button>
-          <button class="diff-btn" data-diff="3">1-3세대<br><small>고수</small></button>
+          <button class="diff-btn selected" data-diff="1">CLASSIC<br><small>1세대 (151)</small></button>
+          <button class="diff-btn" data-diff="2">JOHTO<br><small>1-2세대 (251)</small></button>
+          <button class="diff-btn" data-diff="3">HOENN<br><small>1-3세대 (386)</small></button>
         </div>
       </div>
-      <button class="px-btn" id="startBtn">▶ 게임 시작</button>
+      <button class="px-btn" id="startBtn">▶ BATTLE START</button>
     </div>
 
-    <!-- ── GAME UI ── -->
     <div id="gameUI" class="hidden">
-      <button class="px-btn" id="playCryBtn" style="margin-bottom: 20px;">
-        <span>♪ 울음소리 듣기</span>
+      <button class="px-btn" id="playCryBtn" style="margin-bottom: 25px;">
+        <span>♪ LISTEN TO CRY</span>
       </button>
       
       <div class="choices" id="choices"></div>
 
-      <button class="px-btn" id="hintBtn" style="margin-top: 20px; background: transparent; border-color: #4b5563; color: #4b5563; font-size: 10px;">
-        💡 힌트 보기 (-5점)
+      <button class="px-btn" id="hintBtn" style="margin-top: 25px; background: #e5e7eb; border-color: #000; color: #4b5563; font-size: 12px; box-shadow: 4px 4px 0 0 #000;">
+        💡 USE SCANNER (-5 PTS)
       </button>
       
-      <div class="result-msg" id="resultMsg" style="margin-top: 20px;"></div>
+      <div class="result-msg" id="resultMsg" style="margin-top: 25px;"></div>
       
-      <div id="nextBtnWrap" class="hidden" style="margin-top: 20px;">
-        <button class="px-btn" id="nextBtn" style="background: var(--accent);">다음 문제 ▶</button>
+      <div id="nextBtnWrap" class="hidden" style="margin-top: 25px;">
+        <button class="px-btn" id="nextBtn" style="background: var(--accent);">NEXT POKÉMON ▶</button>
       </div>
     </div>
 
-    <!-- ── END UI ── -->
     <div id="endUI" class="hidden">
-      <button class="px-btn" id="restartBtn" style="margin-bottom: 15px;">↺ 다시 도전</button>
-      <button class="px-btn" id="goStartBtn" style="background: transparent; border-color: #4b5563; color: #4b5563;">◀ 메인으로</button>
+      <button class="px-btn" id="restartBtn" style="margin-bottom: 20px;">↺ TRY AGAIN</button>
+      <button class="px-btn" id="goStartBtn" style="background: #e5e7eb; border-color: #000; color: #4b5563;">◀ TITLE SCREEN</button>
     </div>
-
   </div>
 
-  <footer style="margin-top: 50px; text-align: center; font-size: 8px; color: #9ca3af; line-height: 2;">
-    &copy; 2026 PokeCry. Powered by PokeAPI.<br>
-    Pokémon names are trademarks of Nintendo.
-  </footer>
+  <!-- 정보성 콘텐츠 (애드센스 고품격 사이트 구성) -->
+  <article class="info-section">
+    <h2>포켓몬 울음소리 퀴즈: POKÉCRY</h2>
+    <p>
+      추억의 게임보이 스타일로 즐기는 <strong>포켓몬 울음소리 맞추기</strong> 게임입니다. 
+      각 포켓몬 고유의 사운드를 듣고 이름을 맞춰 당신의 실력을 증명하세요.
+    </p>
+
+    <h2>게임 특징</h2>
+    <ul>
+      <li><strong>레트로 감성:</strong> 실제 게임보이 본체를 모티브로 한 입체적인 디자인과 LCD 도트 효과를 경험하세요.</li>
+      <li><strong>방대한 데이터:</strong> 1세대(관동)부터 3세대(호연)까지 총 386마리의 포켓몬이 등장합니다.</li>
+      <li><strong>전략적 요소:</strong> 빨리 맞출수록 높은 점수를 얻으며, 어려운 문제는 힌트(스캐너) 기능을 사용할 수 있습니다.</li>
+      <li><strong>랭킹 시스템:</strong> 점수에 따라 트레이너 등급과 상위 백분율 순위가 시뮬레이션됩니다.</li>
+    </ul>
+
+    <h2>고득점 팁</h2>
+    <p>
+      포켓몬의 울음소리는 종종 비슷한 파형을 가질 때가 있습니다. 예를 들어, 리자몽과 라이츄의 소리는 매우 유사합니다. 
+      이런 미세한 차이를 구분해내는 것이 전설의 트레이너가 되는 길입니다!
+    </p>
+
+    <footer style="margin-top: 40px; border-top: 2px solid #eee; pt-20; text-align: center; color: #9ca3af; font-size: 12px;">
+      <div style="margin-bottom: 15px;">
+        <a href="#" style="color: #6b7280; text-decoration: none; margin: 0 10px;">이용약관</a>
+        <a href="#" style="color: #6b7280; text-decoration: none; margin: 0 10px;">개인정보처리방침</a>
+        <a href="https://pokeapi.co/" target="_blank" style="color: #6b7280; text-decoration: none; margin: 0 10px;">PokeAPI</a>
+      </div>
+      &copy; 2026 PokeCry. Pokémon and Pokémon character names are trademarks of Nintendo.
+    </footer>
+  </article>
 
   <script type="module" src="main.js"></script>
 </body>
