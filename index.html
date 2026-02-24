@@ -18,8 +18,12 @@
 </head>
 <body id="gameBody">
 
-  <!-- Background Sprites -->
-  <div class="bg-pokemon-container" id="bgPokemonContainer"></div>
+  <!-- Background Sprites Rows -->
+  <div class="bg-pokemon-container" id="bgPokemonContainer">
+    <div class="bg-row left" id="bgRow1"></div>
+    <div class="bg-row right" id="bgRow2"></div>
+    <div class="bg-row left" id="bgRow3"></div>
+  </div>
 
   <!-- Navigation Bar -->
   <nav class="nav-bar">
@@ -36,8 +40,6 @@
     </div>
   </div>
 
-  <div class="streak-badge" id="streakBadge">🔥 <span id="streakCount"></span> 연속!</div>
-
   <!-- Physical Game Boy Container -->
   <div class="gb-frame">
     <div class="gb-header-details">
@@ -51,8 +53,8 @@
         
         <!-- ── START SCREEN ── -->
         <main class="screen active" id="screenStart">
-          <div style="font-size: 14px; margin-bottom: 10px; font-weight: bold;">PRESS START</div>
-          <div style="font-size: 8px; opacity: 0.7; font-family: 'Noto Sans KR';">난이도를 선택하고 시작하세요</div>
+          <div style="font-size: 18px; margin-bottom: 15px; font-weight: bold; color: #306230;">PRESS START</div>
+          <div style="font-size: 12px; font-family: 'Noto Sans KR'; font-weight: bold; color: #306230;">난이도를 선택하고 시작하세요</div>
         </main>
 
         <!-- ── GAME SCREEN ── -->
@@ -72,24 +74,24 @@
         <main class="screen" id="screenEnd">
           <div class="end-screen">
             <div class="final-score" id="finalScore"></div>
-            <div class="final-grade" id="finalGrade"></div>
+            <div class="final-grade" id="finalGrade" style="font-size: 14px; margin-bottom: 15px;"></div>
             <div class="stats-wrap">
-              <div class="stat-row"><span>RANK</span><span id="statRank"></span></div>
-              <div class="stat-row"><span>COMBO</span><span id="statStreak"></span></div>
+              <div class="stat-row" style="font-size: 12px;"><span>RANK</span><span id="statRank"></span></div>
+              <div class="stat-row" style="font-size: 12px;"><span>COMBO</span><span id="statStreak"></span></div>
             </div>
           </div>
         </main>
 
         <!-- ── HISTORY SCREEN ── -->
         <main class="screen" id="screenHistory">
-          <div style="font-size: 10px; margin-bottom: 10px; font-weight: bold;">LAST GAMES</div>
-          <div id="historyList" style="font-size: 7px; text-align: left; width: 100%; overflow-y: auto;"></div>
+          <div style="font-size: 12px; margin-bottom: 10px; font-weight: bold;">LAST GAMES</div>
+          <div id="historyList" style="font-size: 9px; text-align: left; width: 100%; overflow-y: auto;"></div>
         </main>
 
         <!-- ── RANKING SCREEN ── -->
         <main class="screen" id="screenRanking">
-          <div style="font-size: 10px; margin-bottom: 10px; font-weight: bold;">TOP TRAINERS</div>
-          <div id="rankingList" style="font-size: 7px; text-align: left; width: 100%;"></div>
+          <div style="font-size: 12px; margin-bottom: 10px; font-weight: bold;">TOP TRAINERS</div>
+          <div id="rankingList" style="font-size: 9px; text-align: left; width: 100%;"></div>
         </main>
       </div>
 
@@ -130,9 +132,14 @@
 
   <!-- External Interactive Layer -->
   <div class="external-ui">
+    <div class="score-board" id="scoreBoard">
+      <span style="font-size: 14px; font-weight: bold;">SCORE</span>
+      <span id="headerScore" style="font-size: 24px; font-weight: bold; color: var(--gb-button);">0</span>
+    </div>
+
     <div id="startUI">
       <div class="diff-select" style="margin-bottom: 20px;">
-        <span style="font-size: 10px; margin-bottom: 10px; display: block;">▶ SELECT DIFFICULTY</span>
+        <span style="font-size: 12px; margin-bottom: 15px; display: block; font-weight: bold;">▶ SELECT DIFFICULTY</span>
         <div class="diff-btns">
           <button class="diff-btn selected" data-diff="1">EASY</button>
           <button class="diff-btn" data-diff="2">NORMAL</button>
@@ -143,53 +150,53 @@
     </div>
 
     <div id="gameUI" class="hidden">
-      <button class="px-btn" id="playCryBtn" style="margin-bottom: 20px;">♪ LISTEN</button>
+      <button class="px-btn" id="playCryBtn" style="margin-bottom: 20px;">♪ LISTEN TO CRY</button>
       <div class="choices" id="choices"></div>
-      <button class="px-btn" id="hintBtn" style="margin-top: 20px; background: #eee; font-size: 10px;">💡 SCANNER</button>
-      <div class="result-msg" id="resultMsg" style="margin-top: 20px;"></div>
+      <button class="px-btn" id="hintBtn" style="margin-top: 20px; background: #e5e7eb; color: #4b5563; box-shadow: 4px 4px 0 0 #000; font-size: 14px;">💡 힌트 (-50점)</button>
+      <div class="result-msg" id="resultMsg" style="margin-top: 20px; display: none;"></div>
       <div id="nextBtnWrap" class="hidden" style="margin-top: 20px;">
-        <button class="px-btn" id="nextBtn" style="background: var(--accent);">NEXT ▶</button>
+        <button class="px-btn" id="nextBtn" style="background: var(--accent);">NEXT POKÉMON ▶</button>
       </div>
     </div>
 
     <div id="endUI" class="hidden">
-      <button class="px-btn" id="restartBtn">↺ RESTART</button>
+      <button class="px-btn" id="restartBtn">↺ TRY AGAIN</button>
     </div>
   </div>
 
   <!-- Info Section -->
   <article class="info-section">
-    <h2>ABOUT POKECRYING</h2>
+    <h2 style="font-size: 16px;">ABOUT POKECRYING</h2>
     <p>추억의 게임보이 스타일로 즐기는 포켓몬 울음소리 맞추기 게임입니다.</p>
     <p>각 포켓몬 고유의 사운드를 듣고 이름을 맞춰 당신의 실력을 증명하세요!</p>
-    <footer style="margin-top: 20px; font-size: 10px;">
-      <span class="nav-link" id="openTerms">이용약관</span> | 
-      <span class="nav-link" id="openPrivacy">개인정보처리방침</span>
+    <footer style="margin-top: 25px; font-size: 12px; border-top: 1px solid #eee; padding-top: 15px; text-align: center;">
+      <span class="nav-link" id="openTerms" style="padding: 0 10px;">이용약관</span> | 
+      <span class="nav-link" id="openPrivacy" style="padding: 0 10px;">개인정보처리방침</span>
     </footer>
   </article>
 
   <!-- Modals -->
   <div class="modal-overlay" id="modalTerms">
     <div class="modal-content">
-      <div class="modal-close">&times;</div>
-      <h3>이용약관</h3>
+      <div class="modal-close" style="float: right; cursor: pointer; font-size: 24px;">&times;</div>
+      <h3 style="margin-bottom: 20px;">이용약관</h3>
       <div class="modal-body">
         본 서비스는 팬 게임으로, 모든 포켓몬 관련 저작권은 Nintendo/Creatures Inc./GAME FREAK inc.에 있습니다.<br><br>
         1. 사용자는 비상업적인 목적으로만 본 서비스를 이용할 수 있습니다.<br>
-        2. 서비스 내 점수 및 기록은 브라우저 쿠키/로컬 스토리지에 저장될 수 있습니다.
+        2. 서비스 내 점수 및 기록은 브라우저 로컬 저장소에 저장될 수 있습니다.
       </div>
     </div>
   </div>
 
   <div class="modal-overlay" id="modalPrivacy">
     <div class="modal-content">
-      <div class="modal-close">&times;</div>
-      <h3>개인정보처리방침</h3>
+      <div class="modal-close" style="float: right; cursor: pointer; font-size: 24px;">&times;</div>
+      <h3 style="margin-bottom: 20px;">개인정보처리방침</h3>
       <div class="modal-body">
         POKECRYING GAME은 사용자의 민감한 개인정보를 수집하지 않습니다.<br><br>
-        1. 수집 항목: 게임 점수, 콤보 기록, 설정된 난이도.<br>
-        2. 수집 목적: 게임 기록 유지 및 랭킹 시스템 제공.<br>
-        3. 저장 방식: 사용자의 로컬 브라우저 저장소(LocalStorage)를 이용하며 서버에 별도로 저장되지 않습니다.
+        1. 수집 항목: 게임 점수, 콤보 기록, 난이도 설정값.<br>
+        2. 수집 목적: 게임 기록 유지 및 로컬 랭킹 시스템 제공.<br>
+        3. 저장 방식: 사용자의 로컬 브라우저 저장소(LocalStorage)를 이용하며 서버에는 저장되지 않습니다.
       </div>
     </div>
   </div>

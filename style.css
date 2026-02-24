@@ -12,7 +12,6 @@
   --white: #ffffff;
   --text-dark: #1f2937;
   
-  /* Pastel Palette */
   --pastel-1: #fbcfe8;
   --pastel-2: #e0e7ff;
   --pastel-3: #fef3c7;
@@ -46,30 +45,43 @@ body {
   100% { background-position: 0% 50%; }
 }
 
-/* --- Background Pokemon Decoration --- */
+/* --- Structured Background Pokemon --- */
 .bg-pokemon-container {
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 50px 0;
+}
+
+.bg-row {
+  display: flex;
+  white-space: nowrap;
+  gap: 100px;
+}
+
+.bg-row.left { animation: marqueeLeft 30s linear infinite; }
+.bg-row.right { animation: marqueeRight 30s linear infinite; }
+
+@keyframes marqueeLeft {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes marqueeRight {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
 }
 
 .bg-sprite {
-  position: absolute;
-  width: 80px;
-  height: 80px;
-  opacity: 0.15;
+  width: 60px;
+  height: 60px;
+  opacity: 0.1;
   image-rendering: pixelated;
   filter: brightness(0);
-  animation: floatBG 20s linear infinite;
-}
-
-@keyframes floatBG {
-  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
-  10% { opacity: 0.15; }
-  90% { opacity: 0.15; }
-  100% { transform: translate(var(--move-x), var(--move-y)) rotate(360deg); opacity: 0; }
 }
 
 /* --- Navigation Menu Bar --- */
@@ -94,18 +106,13 @@ body {
   font-weight: bold;
   cursor: pointer;
   padding: 5px 10px;
-  transition: all 0.2s;
 }
 
-.nav-link:hover {
-  color: var(--gb-button);
-  transform: scale(1.1);
-}
-
-/* --- Main Title (Above Game Boy) --- */
+/* --- Main Title --- */
 .main-title-wrap {
   text-align: center;
   margin: 40px 0;
+  transition: opacity 0.3s;
 }
 
 .main-title {
@@ -113,20 +120,20 @@ body {
   color: #000;
   text-shadow: 4px 4px 0 var(--white);
   margin-bottom: 15px;
-  letter-spacing: -2px;
 }
 
 .main-subtitle {
   font-family: 'Noto Sans KR', sans-serif;
-  font-size: 14px;
+  font-size: 16px; /* Increased */
   color: #4b5563;
-  background: rgba(255, 255, 255, 0.5);
-  padding: 10px 20px;
-  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: 2px solid #000;
   display: inline-block;
 }
 
-/* --- Game Boy Physical Frame --- */
+/* --- Game Boy --- */
 .gb-frame {
   position: relative;
   width: 100%;
@@ -134,45 +141,16 @@ body {
   background-color: var(--gb-body);
   border-radius: 2.5rem;
   padding: 30px;
-  box-shadow: 
-    15px 20px 0 0 rgba(0,0,0,0.1),
-    inset -4px -4px 10px rgba(0,0,0,0.2),
-    inset 4px 4px 10px rgba(255,255,255,0.3);
+  box-shadow: 15px 20px 0 0 rgba(0,0,0,0.1), inset -4px -4px 10px rgba(0,0,0,0.2);
   border-bottom: 16px solid var(--gb-body-dark);
   border-right: 16px solid var(--gb-body-dark);
-  margin-bottom: 40px;
 }
 
-.gb-header-details {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding: 0 10px;
-}
-
-.gb-line {
-  height: 3px;
-  width: 80px;
-  background: rgba(0,0,0,0.1);
-  border-radius: 99px;
-}
-
-.gb-logo-text {
-  font-size: 7px;
-  font-style: italic;
-  font-weight: bold;
-  color: var(--gb-bezel);
-}
-
-/* --- Screen Area --- */
 .gb-bezel {
   background: var(--gb-bezel);
   border-radius: 12px;
   padding: 35px 35px 20px;
   box-shadow: inset 0 4px 10px rgba(0,0,0,0.5);
-  position: relative;
-  margin-bottom: 10px;
 }
 
 .gb-screen-container {
@@ -192,132 +170,43 @@ body {
   inset: 0;
   background: linear-gradient(rgba(139, 172, 15, 0) 50%, rgba(155, 188, 15, 0.1) 50%);
   background-size: 100% 4px;
-  z-index: 2;
+  z-index: 5;
   pointer-events: none;
 }
 
-.battery-area {
-  margin-top: 15px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+/* --- Sprite Styling (Fixing Size & Silhouette) --- */
+.pokemon-sprite {
+  max-width: 100%;
+  max-height: 100px; /* Constrain size to fit screen */
+  image-rendering: pixelated;
+  object-fit: contain;
+  transition: filter 0.3s;
 }
 
-.battery-led {
-  width: 8px;
-  height: 8px;
-  background: #dc2626;
-  border-radius: 50%;
-  box-shadow: 0 0 8px rgba(220, 38, 38, 0.8);
+.pokemon-sprite.hidden-sprite {
+  filter: brightness(0); /* Pure black silhouette */
+  opacity: 0.9;
 }
 
-.battery-text { color: #dc2626; font-size: 8px; font-weight: bold; }
-
-/* --- Physical Controls 조정 --- */
-.gb-controls {
-  margin-top: 40px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  height: 180px;
+.pokemon-sprite.revealed {
+  filter: none;
+  opacity: 1;
 }
 
-.dpad {
-  width: 100px;
-  height: 100px;
-  position: relative;
-  filter: drop-shadow(0 4px 0 rgba(0,0,0,0.3));
-}
-
-.dpad-h { width: 100px; height: 32px; top: 34px; position: absolute; background: #374151; border-radius: 4px; }
-.dpad-v { width: 32px; height: 100px; left: 34px; position: absolute; background: #374151; border-radius: 4px; }
-
+/* --- Control Spacing --- */
 .buttons-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 25px; /* 버튼 사이 간격 확대 */
+  gap: 30px;
   transform: rotate(-25deg) translateY(15px);
-}
-
-.gb-button {
-  width: 55px;
-  height: 55px;
-  background: var(--gb-button);
-  border-radius: 50%;
-  box-shadow: 0 5px 0 0 var(--gb-button-dark), 0 8px 10px 0 rgba(0,0,0,0.4);
-}
-
-.gb-btn-label {
-  margin-top: 15px; /* 라벨과 버튼 간격 확대 */
-  font-size: 10px;
-  color: #4b5563;
-  font-weight: bold;
-  transform: rotate(25deg);
 }
 
 .start-select-container {
   display: flex;
   justify-content: center;
-  gap: 50px; /* Select/Start 사이 간격 확대 */
-  margin-top: 30px;
-}
-
-.pill-btn-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  transform: rotate(-25deg);
-}
-
-.pill-btn {
-  width: 50px;
-  height: 14px;
-  background: #4b5563;
-  border-radius: 99px;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), 0 2px 0 rgba(255,255,255,0.1);
-}
-
-.pill-label {
-  margin-top: 12px; /* 라벨과 버튼 간격 확대 */
-  font-size: 8px;
-  color: #4b5563;
-  font-weight: bold;
-}
-
-/* --- Screens Content --- */
-.screen {
-  display: none;
-  flex: 1;
-  flex-direction: column;
-  padding: 15px;
-  z-index: 10;
-  color: var(--gb-dark);
-  text-transform: uppercase;
-  justify-content: center;
-  align-items: center;
-}
-
-.screen.active { display: flex; }
-
-.pokemon-area { width: 100%; display: flex; flex-direction: column; align-items: center; }
-
-.silhouette-wrap {
-  width: 120px;
-  height: 120px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  background: rgba(0,0,0,0.05);
-  border-radius: 12px;
-  margin-bottom: 10px;
-}
-
-#unknownIcon {
-  font-size: 40px;
-  font-weight: bold;
-  /* Position absolute already handled by parent flex center */
+  gap: 60px;
+  margin-top: 35px;
 }
 
 /* --- External UI --- */
@@ -331,62 +220,52 @@ body {
 
 .px-btn {
   width: 100%;
-  padding: 20px;
+  padding: 22px;
   background: var(--primary);
   border: 4px solid #000;
   font-family: 'Press Start 2P', monospace;
-  font-size: 14px;
+  font-size: 16px;
   cursor: pointer;
   box-shadow: 4px 4px 0 0 #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
 }
-
-.choices { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 
 .choice-btn {
-  padding: 20px 10px;
+  padding: 24px 10px;
   background: #fff;
   border: 4px solid #000;
-  font-family: 'Press Start 2P', 'Noto Sans KR', sans-serif;
-  font-size: 12px;
+  font-family: 'Noto Sans KR', 'Press Start 2P', sans-serif;
+  font-size: 18px; /* Increased */
+  font-weight: bold;
   cursor: pointer;
   box-shadow: 4px 4px 0 0 #000;
+  line-height: 1.4;
 }
 
-.diff-select {
-  background: #fff;
-  border: 4px solid #000;
+.result-msg {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 18px;
+  font-weight: bold;
   padding: 20px;
-  box-shadow: 4px 4px 0 0 #000;
+  border: 4px solid #000;
+  background: #fff;
+  text-align: center;
 }
 
-.diff-btns { display: flex; gap: 10px; }
-.diff-btn { flex: 1; padding: 10px; border: 2px solid #000; font-family: 'Press Start 2P', monospace; font-size: 9px; cursor: pointer; }
-.diff-btn.selected { background: #000; color: var(--primary); }
-
-/* --- Info Section 조정 --- */
 .info-section {
   width: 100%;
-  max-width: 440px; /* Game Boy와 너비 통일 */
+  max-width: 440px;
   background: #fff;
   border: 4px solid #000;
   padding: 25px;
   margin-top: 40px;
   box-shadow: 6px 6px 0 0 #000;
-  font-family: 'Noto Sans KR', sans-serif;
 }
 
-.info-section h2 { font-family: 'Press Start 2P', monospace; font-size: 12px; margin-bottom: 15px; }
-.info-section p { font-size: 14px; margin-bottom: 10px; color: #4b5563; }
-
-/* --- Popup Modal --- */
+/* --- Modals --- */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.7);
+  background: rgba(0,0,0,0.8);
   display: none;
   align-items: center;
   justify-content: center;
@@ -398,37 +277,11 @@ body {
   border: 5px solid #000;
   width: 90%;
   max-width: 500px;
-  max-height: 80vh;
-  overflow-y: auto;
   padding: 30px;
-  position: relative;
-  font-family: 'Noto Sans KR', sans-serif;
 }
-
-.modal-close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: #000;
-  color: #fff;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
-}
-
-.modal-content h3 { font-family: 'Press Start 2P', monospace; font-size: 14px; margin-bottom: 20px; }
-.modal-body { font-size: 14px; line-height: 1.6; color: #333; }
 
 /* Utils */
 .hidden { display: none !important; }
-.game-started .info-section, .game-started .main-title-wrap { display: none; }
+.game-started .main-title-wrap, .game-started .info-section { display: none; }
 
-@media (max-width: 480px) {
-  .gb-frame { border-radius: 0; padding: 20px; }
-  .choices { grid-template-columns: 1fr; }
-}
+.streak-badge { display: none !important; } /* Removed as requested */
