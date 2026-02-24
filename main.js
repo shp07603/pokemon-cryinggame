@@ -1,6 +1,6 @@
 /**
  * POKECRYING GAME
- * High Stability Logic with Enhanced UI & Background Rows
+ * High Stability Logic with Correct Background Loops & UI Fixes
  */
 
 const ROUNDS = 10;
@@ -94,32 +94,39 @@ function setupEventListeners() {
 
   document.getElementById('openTerms').addEventListener('click', () => els.modalTerms.style.display = 'flex');
   document.getElementById('openPrivacy').addEventListener('click', () => els.modalPrivacy.style.display = 'flex');
-  document.querySelectorAll('.modal-close').forEach(btn => btn.addEventListener('click', (e) => e.target.closest('.modal-overlay').style.display = 'none'));
+  
+  document.querySelectorAll('.modal-close').forEach(btn => {
+    btn.addEventListener('click', (e) => e.target.closest('.modal-overlay').style.display = 'none');
+  });
 }
 
 // --- Background ---
 function initBackgroundRows() {
   const ids = [1, 4, 7, 25, 39, 52, 94, 131, 133, 143, 150, 151, 172, 175, 252, 255, 258];
   els.bgRows.forEach(row => {
-    const content = Array(20).fill(0).map(() => {
+    if (!row) return;
+    const sprites = Array(15).fill(0).map(() => {
       const id = ids[Math.floor(Math.random() * ids.length)];
       return `<img class="bg-sprite" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png">`;
     }).join('');
-    row.innerHTML = content + content; // Duplicate for seamless loop
+    row.innerHTML = sprites + sprites; // Duplicate for loop
   });
 }
 
-// --- Logic ---
+// --- Navigation ---
 function showScreen(id) {
   els.screens.forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  
   els.startUI.classList.toggle('hidden', id !== 'screenStart');
   els.gameUI.classList.toggle('hidden', id !== 'screenGame');
   els.endUI.classList.toggle('hidden', id !== 'screenEnd');
+  
   els.body.classList.toggle('game-started', id === 'screenGame');
   updateHeader();
 }
 
+// --- Game Logic ---
 async function startGame() {
   state = { ...state, currentRound: 0, score: 0, streak: 0, maxStreak: 0, correctCount: 0, usedIds: [], isAnswered: false, hintUsed: false };
   showScreen('screenGame');
@@ -135,10 +142,12 @@ async function loadRound() {
 
   els.resultMsg.style.display = 'none';
   els.nextBtnWrap.classList.add('hidden');
-  els.choices.innerHTML = '<div style="font-size:14px; width:100%; text-align:center;">SEARCHING...</div>';
+  els.choices.innerHTML = '<div style="font-size:18px; width:100%; text-align:center; padding:20px;">LOADING...</div>';
   els.pokemonSprite.className = 'pokemon-sprite hidden-sprite';
   els.pokemonSprite.style.opacity = '0';
   els.unknownIcon.style.display = 'block';
+  els.hintBtn.disabled = false;
+  els.hintBtn.style.opacity = '1';
 
   try {
     const answerId = getUnusedId();
@@ -156,8 +165,11 @@ async function loadRound() {
     const answerName = `${getKoreanName(speciesData)} (${data.name.toUpperCase()})`;
     const options = [answerName];
     
+    // Fetch wrong options
     while(options.length < 4) {
       const rid = Math.floor(Math.random() * state.maxId) + 1;
+      if (state.usedIds.includes(rid)) continue;
+      
       const rRes = await fetch(`https://pokeapi.co/api/v2/pokemon/${rid}`);
       const rData = await rRes.json();
       const rsRes = await fetch(rData.species.url);
@@ -168,12 +180,15 @@ async function loadRound() {
     options.sort(() => Math.random() - 0.5);
 
     els.choices.innerHTML = options.map(opt => `<button class="choice-btn" data-correct="${opt === answerName}">${opt}</button>`).join('');
-    els.choices.querySelectorAll('.choice-btn').forEach(btn => btn.addEventListener('click', (e) => handleAnswer(e.currentTarget, btn.dataset.correct === 'true')));
+    els.choices.querySelectorAll('.choice-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => handleAnswer(e.currentTarget, btn.dataset.correct === 'true'));
+    });
 
     startTimer();
     playCry();
   } catch (err) {
-    loadRound();
+    console.error(err);
+    setTimeout(loadRound, 1000);
   }
 }
 
@@ -188,12 +203,14 @@ function handleAnswer(btn, correct) {
     state.streak++;
     state.correctCount++;
     state.maxStreak = Math.max(state.maxStreak, state.streak);
-    btn.style.background = 'var(--primary)';
+    if(btn) btn.style.background = 'var(--primary)';
     els.resultMsg.textContent = 'CORRECT!';
+    els.resultMsg.style.color = 'var(--gb-dark)';
   } else {
     state.streak = 0;
     if(btn) btn.style.background = 'var(--error)';
     els.resultMsg.textContent = 'WRONG!';
+    els.resultMsg.style.color = 'var(--error)';
     highlightCorrect();
   }
 
@@ -209,7 +226,10 @@ function startTimer() {
   els.timerInterval = setInterval(() => {
     state.timeLeft -= 0.1;
     els.timerBar.style.width = (state.timeLeft / TIME_LIMIT) * 100 + '%';
-    if (state.timeLeft <= 0) { clearInterval(state.timerInterval); handleAnswer(null, false); }
+    if (state.timeLeft <= 0) {
+      clearInterval(state.timerInterval);
+      handleAnswer(null, false);
+    }
   }, 100);
 }
 
@@ -217,7 +237,7 @@ function playCry() {
   if (state.audio) state.audio.pause();
   state.audio = new Audio(state.crySrc);
   state.audio.volume = 0.5;
-  state.audio.play();
+  state.audio.play().catch(() => {});
 }
 
 function useHint() {
@@ -225,8 +245,9 @@ function useHint() {
   state.hintUsed = true;
   state.score = Math.max(0, state.score - 50);
   updateHeader();
+  
   els.pokemonSprite.style.opacity = '1';
-  els.pokemonSprite.classList.add('hidden-sprite');
+  els.pokemonSprite.classList.add('hidden-sprite'); // Forced silhouette
   els.unknownIcon.style.display = 'none';
   els.hintBtn.disabled = true;
   els.hintBtn.style.opacity = '0.5';
@@ -270,13 +291,17 @@ function getUnusedId() {
 function showHistory() {
   showScreen('screenHistory');
   const history = JSON.parse(localStorage.getItem('pokeHistory') || '[]');
-  els.historyList.innerHTML = history.length ? history.map(h => `<div>${h.date}: ${h.score} PTS</div>`).join('') : 'NO DATA';
+  els.historyList.innerHTML = history.length ? history.map(h => 
+    `<div style="margin-bottom:10px; border-bottom:1px solid rgba(0,0,0,0.1); padding-bottom:5px;">${h.date}: ${h.score} PTS</div>`
+  ).join('') : 'NO DATA';
 }
 
 function showRanking() {
   showScreen('screenRanking');
   const ranking = JSON.parse(localStorage.getItem('pokeRanking') || '[]');
-  els.rankingList.innerHTML = ranking.length ? ranking.map((r, i) => `<div>${i+1}st: ${r.score} PTS</div>`).join('') : 'NO DATA';
+  els.rankingList.innerHTML = ranking.length ? ranking.map((r, i) => 
+    `<div style="margin-bottom:10px;">${i+1}st: ${r.score} PTS (${r.date})</div>`
+  ).join('') : 'NO DATA';
 }
 
 function endGame() {
@@ -291,10 +316,11 @@ function endGame() {
 
   showScreen('screenEnd');
   els.finalScore.textContent = `${state.score} PTS`;
-  els.statRank.textContent = `${Math.floor(Math.random() * 20) + 1}%`;
+  els.statRank.textContent = `TOP ${Math.floor(Math.random() * 15) + 1}%`;
   els.statStreak.textContent = state.maxStreak;
+  
   const pct = state.correctCount / ROUNDS;
-  els.finalGrade.textContent = pct >= 0.9 ? 'MASTER' : pct >= 0.7 ? 'ACE' : 'ROOKIE';
+  els.finalGrade.textContent = pct >= 0.9 ? 'MASTER TRAINER' : pct >= 0.7 ? 'ACE TRAINER' : 'ROOKIE TRAINER';
 }
 
 init();
