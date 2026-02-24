@@ -1,6 +1,6 @@
 /**
  * POKECRYING GAME
- * Fix: Second round bugs (Click lock, Timer sync)
+ * Final Stability Fix: Event listener cleanup & Timer sync
  */
 
 const ROUNDS = 10;
@@ -24,7 +24,7 @@ let state = {
   currentSpecies: null,
   timeLeft: TIME_LIMIT,
   timerInterval: null,
-  isAnswered: true, // Initial lock
+  isAnswered: true, 
   hintUsed: false,
   audio: null,
   crySrc: '',
@@ -82,9 +82,9 @@ function setupEventListeners() {
     });
   });
 
-  document.getElementById('navHome').addEventListener('click', () => { stopEverything(); showScreen('screenStart'); });
-  document.getElementById('navHistory').addEventListener('click', () => { stopEverything(); showHistory(); });
-  document.getElementById('navRanking').addEventListener('click', () => { stopEverything(); showRanking(); });
+  document.getElementById('navHome').addEventListener('click', () => showScreen('screenStart'));
+  document.getElementById('navHistory').addEventListener('click', showHistory);
+  document.getElementById('navRanking').addEventListener('click', showRanking);
 
   document.getElementById('openTerms').addEventListener('click', () => els.modalTerms.style.display = 'flex');
   document.getElementById('openPrivacy').addEventListener('click', () => els.modalPrivacy.style.display = 'flex');
@@ -93,7 +93,14 @@ function setupEventListeners() {
 
 function stopEverything() {
   clearInterval(state.timerInterval);
-  if (state.audio) state.audio.pause();
+  state.timerInterval = null;
+  if (state.audio) {
+    state.audio.pause();
+    state.audio.oncanplaythrough = null;
+    state.audio.onplay = null;
+    state.audio.onerror = null;
+    state.audio = null;
+  }
 }
 
 function initBackgroundRows() {
@@ -126,7 +133,6 @@ async function startGame() {
 }
 
 async function loadRound() {
-  // CRITICAL: Reset state and clear timer immediately
   stopEverything();
   state.isAnswered = true; 
   state.hintUsed = false;
@@ -141,7 +147,6 @@ async function loadRound() {
   els.pokemonSprite.style.opacity = '0';
   els.unknownIcon.style.display = 'block';
   els.hintBtn.disabled = true;
-  els.hintBtn.style.opacity = '0.5';
   els.playCryBtn.disabled = true;
 
   try {
@@ -160,51 +165,42 @@ async function loadRound() {
     const answerName = `${getKoreanName(speciesData)} (${data.name.toUpperCase()})`;
     const options = [answerName];
     
-    while(options.length < 4) {
+    // Quick Fetch Wrong Options
+    const wrongPromises = [];
+    while(options.length + wrongPromises.length < 4) {
       const rid = Math.floor(Math.random() * state.maxId) + 1;
-      if (state.usedIds.includes(rid)) continue;
-      const rRes = await fetch(`https://pokeapi.co/api/v2/pokemon/${rid}`);
-      const rData = await rRes.json();
-      const rsRes = await fetch(rData.species.url);
-      const rsData = await rsRes.json();
-      const rName = `${getKoreanName(rsData)} (${rData.name.toUpperCase()})`;
-      if (!options.includes(rName)) options.push(rName);
+      if (!state.usedIds.includes(rid)) {
+        wrongPromises.push(fetch(`https://pokeapi.co/api/v2/pokemon/${rid}`).then(r => r.json()));
+      }
+    }
+    const wrongPokemons = await Promise.all(wrongPromises);
+    for (const wp of wrongPokemons) {
+      const wps = await (await fetch(wp.species.url)).json();
+      options.push(`${getKoreanName(wps)} (${wp.name.toUpperCase()})`);
     }
     options.sort(() => Math.random() - 0.5);
 
     els.choices.innerHTML = options.map(opt => `<button class="choice-btn" data-correct="${opt === answerName}">${opt}</button>`).join('');
-    
-    // Attach listeners immediately, but state.isAnswered will control execution
     els.choices.querySelectorAll('.choice-btn').forEach(btn => {
       btn.addEventListener('click', (e) => handleAnswer(e.currentTarget, btn.dataset.correct === 'true'));
     });
 
-    // Prepare and Wait for Audio
-    if (state.audio) state.audio.pause();
+    // Prepare Audio
     state.audio = new Audio(state.crySrc);
     state.audio.volume = 0.5;
 
-    state.audio.oncanplaythrough = () => {
+    const onAudioReady = () => {
       if (state.isAnswered && state.timeLeft === TIME_LIMIT) {
-        state.isAnswered = false; // UNLOCK
+        state.isAnswered = false; 
         els.hintBtn.disabled = false;
-        els.hintBtn.style.opacity = '1';
         els.playCryBtn.disabled = false;
         playCry();
         startTimer();
       }
     };
 
-    // Backup unlock if audio stalls
-    setTimeout(() => {
-      if (state.isAnswered && state.screens[1].classList.contains('active')) {
-        state.isAnswered = false;
-        els.hintBtn.disabled = false;
-        els.hintBtn.style.opacity = '1';
-        els.playCryBtn.disabled = false;
-        startTimer();
-      }
-    }, 4000);
+    state.audio.oncanplaythrough = onAudioReady;
+    setTimeout(onAudioReady, 3500); // Fail-safe unlock
 
   } catch (err) {
     console.error(err);
@@ -241,9 +237,9 @@ function handleAnswer(btn, correct) {
 }
 
 function startTimer() {
-  clearInterval(state.timerInterval);
+  if (state.timerInterval) clearInterval(state.timerInterval);
   state.timeLeft = TIME_LIMIT;
-  els.timerInterval = setInterval(() => {
+  state.timerInterval = setInterval(() => {
     state.timeLeft -= 0.1;
     els.timerBar.style.width = (state.timeLeft / TIME_LIMIT) * 100 + '%';
     if (state.timeLeft <= 0) {
@@ -254,9 +250,10 @@ function startTimer() {
 }
 
 function playCry() {
-  if (!state.audio) return;
-  state.audio.currentTime = 0;
-  state.audio.play().catch(() => {});
+  if (state.audio) {
+    state.audio.currentTime = 0;
+    state.audio.play().catch(() => {});
+  }
 }
 
 function useHint() {
@@ -264,12 +261,10 @@ function useHint() {
   state.hintUsed = true;
   state.score = Math.max(0, state.score - 50);
   updateHeader();
-  
   els.pokemonSprite.style.opacity = '1';
   els.pokemonSprite.classList.add('hidden-sprite');
   els.unknownIcon.style.display = 'none';
   els.hintBtn.disabled = true;
-  els.hintBtn.style.opacity = '0.5';
 }
 
 function revealPokemon() {
