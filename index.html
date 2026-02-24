@@ -132,9 +132,16 @@
 
   <!-- External Interactive Layer -->
   <div class="external-ui">
+    <!-- Score Board with Round Info -->
     <div class="score-board" id="scoreBoard">
-      <span style="font-size: 14px; font-weight: bold;">SCORE</span>
-      <span id="headerScore" style="font-size: 24px; font-weight: bold; color: var(--gb-button);">0</span>
+      <div style="display: flex; flex-direction: column;">
+        <span style="font-size: 10px; font-weight: bold;">SCORE</span>
+        <span id="headerScore" style="font-size: 24px; font-weight: bold; color: var(--gb-button);">0</span>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: flex-end;">
+        <span style="font-size: 10px; font-weight: bold;">ROUND</span>
+        <span id="headerRound" style="font-size: 24px; font-weight: bold; color: #000;">1/10</span>
+      </div>
     </div>
 
     <div id="startUI">

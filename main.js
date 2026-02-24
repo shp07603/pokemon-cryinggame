@@ -1,6 +1,6 @@
 /**
  * POKECRYING GAME
- * Fix: 10 Rounds limit & Full Randomization
+ * Fix: Precise 10 Rounds limit & Round Display logic
  */
 
 const ROUNDS = 10;
@@ -19,7 +19,7 @@ let state = {
   streak: 0,
   maxStreak: 0,
   correctCount: 0,
-  usedIds: [], // Tracks used IDs in the current session
+  usedIds: [],
   currentPokemon: null,
   currentSpecies: null,
   timeLeft: TIME_LIMIT,
@@ -36,7 +36,9 @@ const els = {
   body: document.getElementById('gameBody'),
   screens: document.querySelectorAll('.screen'),
   bgRows: [document.getElementById('bgRow1'), document.getElementById('bgRow2'), document.getElementById('bgRow3')],
+  
   headerScore: document.getElementById('headerScore'),
+  headerRound: document.getElementById('headerRound'), // New element
   timerBar: document.getElementById('timerBar'),
   pokemonSprite: document.getElementById('pokemonSprite'),
   unknownIcon: document.getElementById('unknownIcon'),
@@ -45,19 +47,23 @@ const els = {
   choices: document.getElementById('choices'),
   resultMsg: document.getElementById('resultMsg'),
   nextBtnWrap: document.getElementById('nextBtnWrap'),
+  
   finalScore: document.getElementById('finalScore'),
   finalGrade: document.getElementById('finalGrade'),
   statRank: document.getElementById('statRank'),
   statStreak: document.getElementById('statStreak'),
   historyList: document.getElementById('historyList'),
   rankingList: document.getElementById('rankingList'),
+
   startBtn: document.getElementById('startBtn'),
   nextBtn: document.getElementById('nextBtn'),
   restartBtn: document.getElementById('restartBtn'),
   diffBtns: document.querySelectorAll('.diff-btn'),
+
   startUI: document.getElementById('startUI'),
   gameUI: document.getElementById('gameUI'),
   endUI: document.getElementById('endUI'),
+
   modalTerms: document.getElementById('modalTerms'),
   modalPrivacy: document.getElementById('modalPrivacy')
 };
@@ -82,9 +88,9 @@ function setupEventListeners() {
     });
   });
 
-  document.getElementById('navHome').addEventListener('click', () => showScreen('screenStart'));
-  document.getElementById('navHistory').addEventListener('click', showHistory);
-  document.getElementById('navRanking').addEventListener('click', showRanking);
+  document.getElementById('navHome').addEventListener('click', () => { stopEverything(); showScreen('screenStart'); });
+  document.getElementById('navHistory').addEventListener('click', () => { stopEverything(); showHistory(); });
+  document.getElementById('navRanking').addEventListener('click', () => { stopEverything(); showRanking(); });
 
   document.getElementById('openTerms').addEventListener('click', () => els.modalTerms.style.display = 'flex');
   document.getElementById('openPrivacy').addEventListener('click', () => els.modalPrivacy.style.display = 'flex');
@@ -136,7 +142,10 @@ async function loadRound() {
   state.hintUsed = false;
   state.timeLeft = TIME_LIMIT;
   
+  // 1. INCREMENT ROUND HERE
+  state.currentRound++;
   updateHeader();
+
   els.timerBar.style.width = '100%';
   els.resultMsg.style.display = 'none';
   els.nextBtnWrap.classList.add('hidden');
@@ -148,7 +157,6 @@ async function loadRound() {
   els.playCryBtn.disabled = true;
 
   try {
-    // 1. Get truly random unused ID
     const answerId = getUnusedId();
     const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${answerId}`);
     const data = await res.json();
@@ -164,17 +172,15 @@ async function loadRound() {
     const answerName = `${getKoreanName(speciesData)} (${data.name.toUpperCase()})`;
     const options = [answerName];
     
-    // 2. Fetch 3 random wrong options
     while(options.length < 4) {
       const rid = Math.floor(Math.random() * state.maxId) + 1;
-      if (rid === answerId) continue;
+      if (state.usedIds.includes(rid)) continue;
       
       const rRes = await fetch(`https://pokeapi.co/api/v2/pokemon/${rid}`);
       const rData = await rRes.json();
       const rsRes = await fetch(rData.species.url);
       const rsData = await rsRes.json();
       const rName = `${getKoreanName(rsData)} (${rData.name.toUpperCase()})`;
-      
       if (!options.includes(rName)) options.push(rName);
     }
     options.sort(() => Math.random() - 0.5);
@@ -197,7 +203,9 @@ async function loadRound() {
     };
 
   } catch (err) {
-    console.error(err);
+    // If error, undo increment and retry
+    state.currentRound--;
+    state.usedIds.pop();
     setTimeout(loadRound, 1000);
   }
 }
@@ -229,7 +237,7 @@ function handleAnswer(btn, correct) {
   els.resultMsg.style.display = 'block';
   els.nextBtnWrap.classList.remove('hidden');
   
-  // 3. Update 'Next' button text if it's the last round
+  // 2. CHECK FOR END OF GAME
   if (state.currentRound >= ROUNDS) {
     els.nextBtn.textContent = "VIEW RESULTS ▶";
   } else {
@@ -238,7 +246,7 @@ function handleAnswer(btn, correct) {
 }
 
 function startTimer() {
-  clearInterval(state.timerInterval);
+  if (state.timerInterval) clearInterval(state.timerInterval);
   state.timeLeft = TIME_LIMIT;
   state.timerInterval = setInterval(() => {
     state.timeLeft -= 0.1;
@@ -283,9 +291,14 @@ function highlightCorrect() {
 
 function updateHeader() {
   els.headerScore.textContent = state.score;
+  // 3. UPDATE ROUND UI
+  if (els.headerRound) {
+    els.headerRound.textContent = `${state.currentRound}/${ROUNDS}`;
+  }
 }
 
 function nextRound() {
+  // 4. STRICT LIMIT CHECK
   if (state.currentRound < ROUNDS) {
     loadRound();
   } else {
