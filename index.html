@@ -3,12 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="포켓몬 울음소리 맞추기 퀴즈 게임! 1세대부터 3세대까지 다양한 포켓몬의 소리를 듣고 이름을 맞춰보세요. 나의 포켓몬 지식은 상위 몇 %일까요?">
-  <meta name="keywords" content="포켓몬, 울음소리, 퀴즈, 게임, 포켓몬스터, 1세대, 2세대, 3세대, 웹게임">
+  <meta name="description" content="포켓몬 울음소리 맞추기 퀴즈 게임! 추억의 게임보이 스타일로 즐겨보세요.">
+  <meta name="keywords" content="포켓몬, 울음소리, 퀴즈, 게임, 포켓몬스터, 레트로, 게임보이">
   <meta name="author" content="PokeCry">
-  <meta name="google-adsense-account" content="ca-pub-7374766314401295">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7374766314401295" crossorigin="anonymous"></script>
-  <title>이 울음소리 포켓몬은? - POKÉCRY</title>
+  <title>POKÉCRY - 이 울음소리 포켓몬은?</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
@@ -16,134 +14,175 @@
 </head>
 <body>
 
-  <div class="streak-badge" id="streakBadge">🔥 <span id="streakCount"></span> 연속 정답!</div>
+  <div class="streak-badge" id="streakBadge">🔥 <span id="streakCount"></span> 연속!</div>
 
-  <div class="game-shell">
-    <header class="header">
-      <div class="header-title">◀ POKÉCRY ▶</div>
-      <div class="header-score">점수: <span id="headerScore">0</span></div>
-      <div class="header-round"><span id="headerRound">-</span>/10</div>
-    </header>
+  <!-- Physical Game Boy Container -->
+  <div class="gb-frame">
+    <!-- Top Details -->
+    <div class="gb-header-details">
+      <div class="gb-line"></div>
+      <div class="gb-logo-text">DOT MATRIX WITH STEREO SOUND</div>
+    </div>
 
-    <!-- ── START SCREEN ── -->
-    <main class="screen active" id="screenStart">
-      <div class="start-logo">
-        <span class="big">이 울음소리<br>포켓몬은?</span>
-        <span class="sub">소리만 듣고 포켓몬을 맞춰보세요!<br>10문제 · 15초 제한</span>
+    <!-- Screen Bezel -->
+    <div class="gb-bezel">
+      <div class="gb-screen-container">
+        <div class="lcd-scanline"></div>
+        
+        <!-- ── START SCREEN (Inside GB) ── -->
+        <main class="screen active" id="screenStart">
+          <div class="start-logo">
+            <span class="big">이 울음소리<br>포켓몬은?</span>
+            <span class="sub">소리를 듣고 이름을 맞춰보세요!</span>
+          </div>
+        </main>
+
+        <!-- ── GAME SCREEN (Inside GB) ── -->
+        <main class="screen" id="screenGame">
+          <div class="screen-header">
+            <span>POKÉCRY</span>
+            <span>ROUND <span id="headerRound">-</span></span>
+          </div>
+
+          <div class="pokemon-area">
+            <div class="silhouette-wrap">
+              <div class="scan-ring" id="scanRing"></div>
+              <img class="pokemon-sprite hidden-sprite" id="pokemonSprite" src="" alt="포켓몬" style="opacity:0">
+              <div id="unknownIcon">?</div>
+            </div>
+            
+            <div class="waveform" id="waveform"></div>
+            
+            <div class="timer-wrap">
+              <div class="timer-bar-bg">
+                <div class="timer-bar" id="timerBar"></div>
+              </div>
+              <div style="font-size: 6px; text-align: right; margin-top: 4px;" id="timerLabel">15s</div>
+            </div>
+          </div>
+        </main>
+
+        <!-- ── END SCREEN (Inside GB) ── -->
+        <main class="screen" id="screenEnd">
+          <div class="end-screen">
+            <div style="font-size: 7px; margin-bottom: 5px;">최종 결과</div>
+            <div class="final-score" id="finalScore"></div>
+            <div class="final-grade" id="finalGrade"></div>
+            <div class="stats-wrap">
+              <div class="stat-row"><span>정답</span><span id="statCorrect"></span></div>
+              <div class="stat-row"><span>최고 연속</span><span id="statStreak"></span></div>
+              <div class="stat-row"><span>순위</span><span id="statRank"></span></div>
+              <div class="stat-row"><span>난이도</span><span id="statDiff"></span></div>
+            </div>
+          </div>
+        </main>
       </div>
 
-      <div class="pokemon-marquee" id="marqueeWrap">
-        <div class="marquee-inner" id="marqueeInner"></div>
-        <div class="marquee-inner" id="marqueeInner2" aria-hidden="true"></div>
+      <!-- Battery Indicator -->
+      <div class="battery-area">
+        <div class="battery-led"></div>
+        <div class="battery-text">BATTERY</div>
       </div>
+    </div>
 
-      <div class="diff-select">
-        <span class="diff-label">▶ 난이도 선택</span>
-        <div class="diff-btns">
-          <button class="diff-btn selected" data-diff="1" data-range="1-151">
-            🌱 입문<br><small>1세대 (151)</small>
-          </button>
-          <button class="diff-btn" data-diff="2" data-range="1-251">
-            ⚡ 보통<br><small>1~2세대 (251)</small>
-          </button>
-          <button class="diff-btn" data-diff="3" data-range="1-386">
-            🔥 고수<br><small>1~3세대 (386)</small>
-          </button>
+    <!-- Physical Controls Decor -->
+    <div class="gb-controls">
+      <!-- D-Pad -->
+      <div class="dpad-container">
+        <div class="dpad">
+          <div class="dpad-h"></div>
+          <div class="dpad-v"></div>
+          <div class="dpad-center"></div>
         </div>
       </div>
-
-      <button class="px-btn" id="startBtn"><span>▶ 게임 시작</span></button>
-    </main>
-
-    <!-- ── GAME SCREEN ── -->
-    <main class="screen" id="screenGame">
-      <div class="timer-wrap">
-        <div class="timer-bar-bg">
-          <div class="timer-bar" id="timerBar"></div>
+      <!-- A/B Buttons -->
+      <div class="buttons-container">
+        <div class="gb-btn-wrap">
+          <div class="gb-button"></div>
+          <div class="gb-btn-label">B</div>
         </div>
-        <div class="timer-label" id="timerLabel">15초</div>
-      </div>
-
-      <div class="pokemon-area">
-        <div class="silhouette-wrap">
-          <div class="scan-ring" id="scanRing"></div>
-          <img class="pokemon-sprite hidden-sprite" id="pokemonSprite" src="" alt="포켓몬" style="opacity:0">
-          <div id="unknownIcon" style="position:absolute;font-size:40px;color:var(--green-dim);">?</div>
+        <div class="gb-btn-wrap">
+          <div class="gb-button"></div>
+          <div class="gb-btn-label">A</div>
         </div>
-
-        <button class="px-btn hint-btn" id="hintBtn" style="margin-bottom:16px;padding:12px;width:auto;font-size:12px;background:transparent;border:1px solid var(--green-dim);color:var(--green-dim);">
-          💡 힌트 보기 (-5점)
-        </button>
-
-        <div class="waveform" id="waveform"></div>
-
-        <button class="play-cry-btn" id="playCryBtn">
-          <span class="play-icon">♪</span>
-          <span>울음소리 듣기</span>
-        </button>
       </div>
+    </div>
 
-      <div class="choices" id="choices"></div>
-
-      <div class="result-msg" id="resultMsg"></div>
-      <div class="next-btn-wrap" id="nextBtnWrap">
-        <button class="px-btn" id="nextBtn"><span>다음 문제 ▶</span></button>
+    <!-- Start/Select Decor -->
+    <div class="start-select-container">
+      <div class="pill-btn-wrap">
+        <div class="pill-btn"></div>
+        <div class="pill-label">SELECT</div>
       </div>
-    </main>
-
-    <!-- ── END SCREEN ── -->
-    <main class="screen" id="screenEnd">
-      <div class="end-screen">
-        <div class="final-score-label">▶ 최종 결과</div>
-        <span class="final-score" id="finalScore"></span>
-        <span class="final-grade" id="finalGrade"></span>
-        <div class="stats-wrap">
-          <div class="stat-row"><span>정답</span><span id="statCorrect"></span></div>
-          <div class="stat-row"><span>오답</span><span id="statWrong"></span></div>
-          <div class="stat-row"><span>최고 연속 정답</span><span id="statStreak"></span></div>
-          <div class="stat-row"><span>나의 순위</span><span id="statRank">상위 -%</span></div>
-          <div class="stat-row"><span>난이도</span><span id="statDiff"></span></div>
-        </div>
-        <button class="px-btn" id="restartBtn" style="margin-bottom:10px"><span>↺ 다시 하기</span></button>
-        <button class="px-btn" id="goStartBtn" style="background:transparent;border-color:var(--border);color:var(--green-dim);box-shadow:none;margin-top:6px"><span>◀ 타이틀로</span></button>
+      <div class="pill-btn-wrap">
+        <div class="pill-btn"></div>
+        <div class="pill-label">START</div>
       </div>
-    </main>
+    </div>
+
+    <!-- Speaker Decor -->
+    <div class="speaker">
+      <div class="speaker-bar"></div>
+      <div class="speaker-bar"></div>
+      <div class="speaker-bar"></div>
+      <div class="speaker-bar"></div>
+      <div class="speaker-bar"></div>
+      <div class="speaker-bar"></div>
+    </div>
   </div>
 
-  <!-- Content Section for SEO & AdSense -->
-  <section class="content-section">
-    <h2>포켓몬 울음소리 퀴즈란?</h2>
-    <p>
-      '이 울음소리 포켓몬은?' 게임은 추억의 포켓몬스터 게임 속 울음소리를 듣고 
-      어떤 포켓몬인지 맞추는 팬 게임입니다. 
-      1세대(레드/그린)부터 3세대(루비/사파이어)까지의 다양한 포켓몬이 등장합니다.
-    </p>
-
-    <h2>게임 방법</h2>
-    <ul>
-      <li><strong>듣기:</strong> '울음소리 듣기' 버튼을 눌러 소리를 확인하세요.</li>
-      <li><strong>맞추기:</strong> 4개의 보기 중 정답을 선택하세요.</li>
-      <li><strong>시간 제한:</strong> 각 문제는 15초의 제한 시간이 있습니다. 빨리 맞출수록 높은 점수를 얻습니다.</li>
-      <li><strong>힌트:</strong> 너무 어렵다면 힌트를 사용하여 실루엣을 볼 수 있지만, 점수가 차감됩니다.</li>
-    </ul>
-
-    <h2>특징</h2>
-    <ul>
-      <li>레트로 CRT 모니터 스타일의 감성적인 디자인</li>
-      <li>실시간 오디오 시각화 (Waveform) 효과</li>
-      <li>모바일과 PC 모두에서 즐길 수 있는 반응형 웹 디자인</li>
-    </ul>
-  </section>
-
-  <footer class="footer">
-    <div class="footer-links">
-      <a href="#">이용약관</a>
-      <a href="#">개인정보처리방침</a>
-      <a href="https://pokeapi.co/" target="_blank">Powered by PokeAPI</a>
+  <!-- External Interactive Layer -->
+  <div class="external-ui">
+    
+    <!-- Header Score (Outside for better visibility) -->
+    <div style="display: flex; justify-content: space-between; align-items: center; background: #fff; border: 4px solid #000; padding: 10px 20px;">
+      <span style="font-size: 10px;">SCORE</span>
+      <span id="headerScore" style="font-size: 14px; font-weight: bold;">0</span>
     </div>
-    <div class="copyright">
-      &copy; 2026 PokeCry. Pokémon and Pokémon character names are trademarks of Nintendo.
+
+    <!-- ── START UI ── -->
+    <div id="startUI">
+      <div class="diff-select" style="margin-bottom: 20px;">
+        <span class="diff-label">▶ 난이도 선택</span>
+        <div class="diff-btns">
+          <button class="diff-btn selected" data-diff="1">1세대<br><small>입문</small></button>
+          <button class="diff-btn" data-diff="2">1-2세대<br><small>보통</small></button>
+          <button class="diff-btn" data-diff="3">1-3세대<br><small>고수</small></button>
+        </div>
+      </div>
+      <button class="px-btn" id="startBtn">▶ 게임 시작</button>
     </div>
+
+    <!-- ── GAME UI ── -->
+    <div id="gameUI" class="hidden">
+      <button class="px-btn" id="playCryBtn" style="margin-bottom: 20px;">
+        <span>♪ 울음소리 듣기</span>
+      </button>
+      
+      <div class="choices" id="choices"></div>
+
+      <button class="px-btn" id="hintBtn" style="margin-top: 20px; background: transparent; border-color: #4b5563; color: #4b5563; font-size: 10px;">
+        💡 힌트 보기 (-5점)
+      </button>
+      
+      <div class="result-msg" id="resultMsg" style="margin-top: 20px;"></div>
+      
+      <div id="nextBtnWrap" class="hidden" style="margin-top: 20px;">
+        <button class="px-btn" id="nextBtn" style="background: var(--accent);">다음 문제 ▶</button>
+      </div>
+    </div>
+
+    <!-- ── END UI ── -->
+    <div id="endUI" class="hidden">
+      <button class="px-btn" id="restartBtn" style="margin-bottom: 15px;">↺ 다시 도전</button>
+      <button class="px-btn" id="goStartBtn" style="background: transparent; border-color: #4b5563; color: #4b5563;">◀ 메인으로</button>
+    </div>
+
+  </div>
+
+  <footer style="margin-top: 50px; text-align: center; font-size: 8px; color: #9ca3af; line-height: 2;">
+    &copy; 2026 PokeCry. Powered by PokeAPI.<br>
+    Pokémon names are trademarks of Nintendo.
   </footer>
 
   <script type="module" src="main.js"></script>

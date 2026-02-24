@@ -97,6 +97,15 @@ function setupEventListeners() {
 function showScreen(id) {
   els.screens.forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+
+  // Toggle external UI layers
+  const startUI = document.getElementById('startUI');
+  const gameUI = document.getElementById('gameUI');
+  const endUI = document.getElementById('endUI');
+
+  startUI.classList.toggle('hidden', id !== 'screenStart');
+  gameUI.classList.toggle('hidden', id !== 'screenGame');
+  endUI.classList.toggle('hidden', id !== 'screenEnd');
 }
 
 // --- Difficulty ---
@@ -111,6 +120,8 @@ function buildMarquee() {
   const inner = document.getElementById('marqueeInner');
   const inner2 = document.getElementById('marqueeInner2');
   
+  if (!inner || !inner2) return;
+
   const imgs = ids.map(id => 
     `<img class="marquee-img" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png" alt="">`
   ).join('');
@@ -121,6 +132,7 @@ function buildMarquee() {
 
 // --- Waveform Decor ---
 function buildWaveform() {
+  if (!els.waveform) return;
   els.waveform.innerHTML = '';
   for (let i = 0; i < 20; i++) {
     const bar = document.createElement('div');
