@@ -1,6 +1,6 @@
 /**
  * POKECRYING GAME
- * High Stability Logic with Correct Background Loops & UI Fixes
+ * Updated Logic: Synchronized Timer with Audio Loading
  */
 
 const ROUNDS = 10;
@@ -36,7 +36,6 @@ const els = {
   body: document.getElementById('gameBody'),
   screens: document.querySelectorAll('.screen'),
   bgRows: [document.getElementById('bgRow1'), document.getElementById('bgRow2'), document.getElementById('bgRow3')],
-  
   headerScore: document.getElementById('headerScore'),
   timerBar: document.getElementById('timerBar'),
   pokemonSprite: document.getElementById('pokemonSprite'),
@@ -46,28 +45,23 @@ const els = {
   choices: document.getElementById('choices'),
   resultMsg: document.getElementById('resultMsg'),
   nextBtnWrap: document.getElementById('nextBtnWrap'),
-  
   finalScore: document.getElementById('finalScore'),
   finalGrade: document.getElementById('finalGrade'),
   statRank: document.getElementById('statRank'),
   statStreak: document.getElementById('statStreak'),
   historyList: document.getElementById('historyList'),
   rankingList: document.getElementById('rankingList'),
-
   startBtn: document.getElementById('startBtn'),
   nextBtn: document.getElementById('nextBtn'),
   restartBtn: document.getElementById('restartBtn'),
   diffBtns: document.querySelectorAll('.diff-btn'),
-
   startUI: document.getElementById('startUI'),
   gameUI: document.getElementById('gameUI'),
   endUI: document.getElementById('endUI'),
-
   modalTerms: document.getElementById('modalTerms'),
   modalPrivacy: document.getElementById('modalPrivacy')
 };
 
-// --- Initialization ---
 function init() {
   setupEventListeners();
   initBackgroundRows();
@@ -88,19 +82,24 @@ function setupEventListeners() {
     });
   });
 
-  document.getElementById('navHome').addEventListener('click', () => showScreen('screenStart'));
-  document.getElementById('navHistory').addEventListener('click', showHistory);
-  document.getElementById('navRanking').addEventListener('click', showRanking);
+  document.getElementById('navHome').addEventListener('click', () => {
+    stopCry();
+    showScreen('screenStart');
+  });
+  document.getElementById('navHistory').addEventListener('click', () => {
+    stopCry();
+    showHistory();
+  });
+  document.getElementById('navRanking').addEventListener('click', () => {
+    stopCry();
+    showRanking();
+  });
 
   document.getElementById('openTerms').addEventListener('click', () => els.modalTerms.style.display = 'flex');
   document.getElementById('openPrivacy').addEventListener('click', () => els.modalPrivacy.style.display = 'flex');
-  
-  document.querySelectorAll('.modal-close').forEach(btn => {
-    btn.addEventListener('click', (e) => e.target.closest('.modal-overlay').style.display = 'none');
-  });
+  document.querySelectorAll('.modal-close').forEach(btn => btn.addEventListener('click', (e) => e.target.closest('.modal-overlay').style.display = 'none'));
 }
 
-// --- Background ---
 function initBackgroundRows() {
   const ids = [1, 4, 7, 25, 39, 52, 94, 131, 133, 143, 150, 151, 172, 175, 252, 255, 258];
   els.bgRows.forEach(row => {
@@ -109,24 +108,21 @@ function initBackgroundRows() {
       const id = ids[Math.floor(Math.random() * ids.length)];
       return `<img class="bg-sprite" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png">`;
     }).join('');
-    row.innerHTML = sprites + sprites; // Duplicate for loop
+    row.innerHTML = sprites + sprites;
   });
 }
 
-// --- Navigation ---
 function showScreen(id) {
+  clearInterval(state.timerInterval);
   els.screens.forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  
   els.startUI.classList.toggle('hidden', id !== 'screenStart');
   els.gameUI.classList.toggle('hidden', id !== 'screenGame');
   els.endUI.classList.toggle('hidden', id !== 'screenEnd');
-  
   els.body.classList.toggle('game-started', id === 'screenGame');
   updateHeader();
 }
 
-// --- Game Logic ---
 async function startGame() {
   state = { ...state, currentRound: 0, score: 0, streak: 0, maxStreak: 0, correctCount: 0, usedIds: [], isAnswered: false, hintUsed: false };
   showScreen('screenGame');
@@ -135,19 +131,20 @@ async function startGame() {
 
 async function loadRound() {
   state.currentRound++;
-  state.isAnswered = false;
+  state.isAnswered = true; // Temporary lock until audio ready
   state.hintUsed = false;
   state.timeLeft = TIME_LIMIT;
   updateHeader();
 
+  els.timerBar.style.width = '100%';
   els.resultMsg.style.display = 'none';
   els.nextBtnWrap.classList.add('hidden');
-  els.choices.innerHTML = '<div style="font-size:18px; width:100%; text-align:center; padding:20px;">LOADING...</div>';
+  els.choices.innerHTML = '<div style="font-size:18px; width:100%; text-align:center; padding:20px;">SEARCHING...</div>';
   els.pokemonSprite.className = 'pokemon-sprite hidden-sprite';
   els.pokemonSprite.style.opacity = '0';
   els.unknownIcon.style.display = 'block';
-  els.hintBtn.disabled = false;
-  els.hintBtn.style.opacity = '1';
+  els.hintBtn.disabled = true;
+  els.hintBtn.style.opacity = '0.5';
 
   try {
     const answerId = getUnusedId();
@@ -165,7 +162,6 @@ async function loadRound() {
     const answerName = `${getKoreanName(speciesData)} (${data.name.toUpperCase()})`;
     const options = [answerName];
     
-    // Fetch wrong options
     while(options.length < 4) {
       const rid = Math.floor(Math.random() * state.maxId) + 1;
       if (state.usedIds.includes(rid)) continue;
@@ -180,22 +176,59 @@ async function loadRound() {
     options.sort(() => Math.random() - 0.5);
 
     els.choices.innerHTML = options.map(opt => `<button class="choice-btn" data-correct="${opt === answerName}">${opt}</button>`).join('');
-    els.choices.querySelectorAll('.choice-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => handleAnswer(e.currentTarget, btn.dataset.correct === 'true'));
-    });
+    
+    // Preparation complete, wait for audio
+    prepareAudio();
 
-    startTimer();
-    playCry();
   } catch (err) {
     console.error(err);
     setTimeout(loadRound, 1000);
   }
 }
 
+function prepareAudio() {
+  if (state.audio) state.audio.pause();
+  state.audio = new Audio(state.crySrc);
+  state.audio.volume = 0.5;
+
+  // Key change: Start game only when audio is ready to play
+  state.audio.oncanplaythrough = () => {
+    if (state.isAnswered && state.timeLeft === TIME_LIMIT) {
+      state.isAnswered = false; // Unlock game
+      els.hintBtn.disabled = false;
+      els.hintBtn.style.opacity = '1';
+      els.playCryBtn.disabled = false;
+      
+      els.choices.querySelectorAll('.choice-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => handleAnswer(e.currentTarget, btn.dataset.correct === 'true'));
+      });
+
+      playCry();
+      startTimer();
+    }
+  };
+
+  state.audio.onerror = () => {
+    console.warn("Audio load error, skipping...");
+    loadRound();
+  };
+}
+
+function playCry() {
+  if (!state.audio) return;
+  state.audio.currentTime = 0;
+  state.audio.play().catch(() => {});
+}
+
+function stopCry() {
+  if (state.audio) state.audio.pause();
+}
+
 function handleAnswer(btn, correct) {
   if (state.isAnswered) return;
   state.isAnswered = true;
   clearInterval(state.timerInterval);
+  stopCry();
 
   if (correct) {
     const points = Math.round(state.timeLeft * 10);
@@ -233,13 +266,6 @@ function startTimer() {
   }, 100);
 }
 
-function playCry() {
-  if (state.audio) state.audio.pause();
-  state.audio = new Audio(state.crySrc);
-  state.audio.volume = 0.5;
-  state.audio.play().catch(() => {});
-}
-
 function useHint() {
   if (state.isAnswered || state.hintUsed) return;
   state.hintUsed = true;
@@ -247,7 +273,7 @@ function useHint() {
   updateHeader();
   
   els.pokemonSprite.style.opacity = '1';
-  els.pokemonSprite.classList.add('hidden-sprite'); // Forced silhouette
+  els.pokemonSprite.classList.add('hidden-sprite');
   els.unknownIcon.style.display = 'none';
   els.hintBtn.disabled = true;
   els.hintBtn.style.opacity = '0.5';
@@ -318,7 +344,6 @@ function endGame() {
   els.finalScore.textContent = `${state.score} PTS`;
   els.statRank.textContent = `TOP ${Math.floor(Math.random() * 15) + 1}%`;
   els.statStreak.textContent = state.maxStreak;
-  
   const pct = state.correctCount / ROUNDS;
   els.finalGrade.textContent = pct >= 0.9 ? 'MASTER TRAINER' : pct >= 0.7 ? 'ACE TRAINER' : 'ROOKIE TRAINER';
 }
