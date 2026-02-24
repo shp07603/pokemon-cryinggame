@@ -1,6 +1,6 @@
 /**
  * POKECRYING GAME
- * Final Stability Fix: Event listener cleanup & Timer sync
+ * Fix: 10 Rounds limit & Full Randomization
  */
 
 const ROUNDS = 10;
@@ -19,7 +19,7 @@ let state = {
   streak: 0,
   maxStreak: 0,
   correctCount: 0,
-  usedIds: [],
+  usedIds: [], // Tracks used IDs in the current session
   currentPokemon: null,
   currentSpecies: null,
   timeLeft: TIME_LIMIT,
@@ -97,8 +97,6 @@ function stopEverything() {
   if (state.audio) {
     state.audio.pause();
     state.audio.oncanplaythrough = null;
-    state.audio.onplay = null;
-    state.audio.onerror = null;
     state.audio = null;
   }
 }
@@ -150,6 +148,7 @@ async function loadRound() {
   els.playCryBtn.disabled = true;
 
   try {
+    // 1. Get truly random unused ID
     const answerId = getUnusedId();
     const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${answerId}`);
     const data = await res.json();
@@ -165,18 +164,18 @@ async function loadRound() {
     const answerName = `${getKoreanName(speciesData)} (${data.name.toUpperCase()})`;
     const options = [answerName];
     
-    // Quick Fetch Wrong Options
-    const wrongPromises = [];
-    while(options.length + wrongPromises.length < 4) {
+    // 2. Fetch 3 random wrong options
+    while(options.length < 4) {
       const rid = Math.floor(Math.random() * state.maxId) + 1;
-      if (!state.usedIds.includes(rid)) {
-        wrongPromises.push(fetch(`https://pokeapi.co/api/v2/pokemon/${rid}`).then(r => r.json()));
-      }
-    }
-    const wrongPokemons = await Promise.all(wrongPromises);
-    for (const wp of wrongPokemons) {
-      const wps = await (await fetch(wp.species.url)).json();
-      options.push(`${getKoreanName(wps)} (${wp.name.toUpperCase()})`);
+      if (rid === answerId) continue;
+      
+      const rRes = await fetch(`https://pokeapi.co/api/v2/pokemon/${rid}`);
+      const rData = await rRes.json();
+      const rsRes = await fetch(rData.species.url);
+      const rsData = await rsRes.json();
+      const rName = `${getKoreanName(rsData)} (${rData.name.toUpperCase()})`;
+      
+      if (!options.includes(rName)) options.push(rName);
     }
     options.sort(() => Math.random() - 0.5);
 
@@ -185,11 +184,9 @@ async function loadRound() {
       btn.addEventListener('click', (e) => handleAnswer(e.currentTarget, btn.dataset.correct === 'true'));
     });
 
-    // Prepare Audio
     state.audio = new Audio(state.crySrc);
     state.audio.volume = 0.5;
-
-    const onAudioReady = () => {
+    state.audio.oncanplaythrough = () => {
       if (state.isAnswered && state.timeLeft === TIME_LIMIT) {
         state.isAnswered = false; 
         els.hintBtn.disabled = false;
@@ -198,9 +195,6 @@ async function loadRound() {
         startTimer();
       }
     };
-
-    state.audio.oncanplaythrough = onAudioReady;
-    setTimeout(onAudioReady, 3500); // Fail-safe unlock
 
   } catch (err) {
     console.error(err);
@@ -234,10 +228,17 @@ function handleAnswer(btn, correct) {
   updateHeader();
   els.resultMsg.style.display = 'block';
   els.nextBtnWrap.classList.remove('hidden');
+  
+  // 3. Update 'Next' button text if it's the last round
+  if (state.currentRound >= ROUNDS) {
+    els.nextBtn.textContent = "VIEW RESULTS ▶";
+  } else {
+    els.nextBtn.textContent = "NEXT POKÉMON ▶";
+  }
 }
 
 function startTimer() {
-  if (state.timerInterval) clearInterval(state.timerInterval);
+  clearInterval(state.timerInterval);
   state.timeLeft = TIME_LIMIT;
   state.timerInterval = setInterval(() => {
     state.timeLeft -= 0.1;
@@ -285,8 +286,11 @@ function updateHeader() {
 }
 
 function nextRound() {
-  if (state.currentRound < ROUNDS) loadRound();
-  else endGame();
+  if (state.currentRound < ROUNDS) {
+    loadRound();
+  } else {
+    endGame();
+  }
 }
 
 function getKoreanName(species) {
