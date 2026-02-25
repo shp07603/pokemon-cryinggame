@@ -65,12 +65,16 @@ const els = {
   endUI: document.getElementById('endUI'),
 
   modalTerms: document.getElementById('modalTerms'),
-  modalPrivacy: document.getElementById('modalPrivacy')
+  modalPrivacy: document.getElementById('modalPrivacy'),
+
+  bgm: document.getElementById('bgm'),
+  bgmToggle: document.getElementById('bgmToggle')
 };
 
 function init() {
   setupEventListeners();
   initBackgroundRows();
+  if (els.bgm) els.bgm.volume = 0.3;
 }
 
 function setupEventListeners() {
@@ -79,6 +83,8 @@ function setupEventListeners() {
   els.restartBtn.addEventListener('click', () => showScreen('screenStart'));
   els.playCryBtn.addEventListener('click', playCry);
   els.hintBtn.addEventListener('click', useHint);
+
+  els.bgmToggle.addEventListener('click', toggleBGM);
 
   els.diffBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -351,6 +357,18 @@ function endGame() {
   els.statStreak.textContent = state.maxStreak;
   const pct = state.correctCount / ROUNDS;
   els.finalGrade.textContent = pct >= 0.9 ? 'MASTER TRAINER' : pct >= 0.7 ? 'ACE TRAINER' : 'ROOKIE TRAINER';
+}
+
+function toggleBGM() {
+  if (els.bgm.paused) {
+    els.bgm.play();
+    els.bgmToggle.textContent = 'BGM: ON';
+    els.bgmToggle.style.color = 'var(--gb-button)';
+  } else {
+    els.bgm.pause();
+    els.bgmToggle.textContent = 'BGM: OFF';
+    els.bgmToggle.style.color = '#000';
+  }
 }
 
 init();

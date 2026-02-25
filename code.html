@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;family=Press+Start+2P&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#39ff14",
+                        "gb-body": "#9ca3af",
+                        "gb-screen": "#8bac0f",
+                        "gb-dark": "#306230",
+                        "gb-bezel": "#374151",
+                        "gb-button": "#9f1239",
+                        "gb-button-dark": "#4c0519"
+                    },
+                    fontFamily: {
+                        "display": ["'Press Start 2P'", "cursive"],
+                        "sans": ["'Spline Sans'", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        :root {
+            --gb-shadow: rgba(0, 0, 0, 0.2);
+        }
+        
+        body {
+            background-color: #e5e7eb;
+            background-image: radial-gradient(#d1d5db 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .gb-texture {
+            background-image: radial-gradient(circle at 2px 2px, rgba(0,0,0,0.05) 1px, transparent 0);
+            background-size: 4px 4px;
+        }
+
+        .pixel-border {
+            box-shadow: 
+                0 -4px 0 0 #000,
+                0 4px 0 0 #000,
+                -4px 0 0 0 #000,
+                4px 0 0 0 #000;
+        }
+
+        .lcd-scanline {
+            background: linear-gradient(rgba(139, 172, 15, 0) 50%, rgba(155, 188, 15, 0.1) 50%);
+            background-size: 100% 4px;
+        }
+
+        .dpad-cross {
+            filter: drop-shadow(0 4px 0 rgba(0,0,0,0.3));
+        }
+
+        .gb-btn-shadow {
+            box-shadow: 0 6px 0 0 var(--gb-button-dark), 0 8px 10px 0 rgba(0,0,0,0.4);
+        }
+        
+        .gb-btn-active:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 0 var(--gb-button-dark), 0 4px 6px 0 rgba(0,0,0,0.4);
+        }
+
+        .gb-bezel-shadow {
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .speaker-hole {
+            background: linear-gradient(90deg, #64748b 25%, transparent 25%, transparent 75%, #64748b 75%);
+            background-size: 8px 100%;
+        }
+
+        /* Pixel style for choices */
+        .choice-btn {
+            border: 4px solid #000;
+            position: relative;
+            background: #fff;
+            transition: all 0.1s;
+        }
+        .choice-btn:hover {
+            background: #f3f4f6;
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0 0 #000;
+        }
+        .choice-btn:active {
+            transform: translate(0, 0);
+            box-shadow: 0 0 0 0 #000;
+        }
+    </style>
+</head>
+<body class="font-display text-[10px] uppercase tracking-tighter flex flex-col items-center py-10 px-4 min-h-screen">
+
+    <!-- Game Boy Physical Body -->
+    <div class="relative w-full max-w-[420px] bg-slate-400 rounded-[2.5rem] p-8 shadow-[15px_20px_0_0_rgba(0,0,0,0.1),inset_-4px_-4px_10px_rgba(0,0,0,0.2),inset_4px_4px_10px_rgba(255,255,255,0.3)] border-b-[16px] border-r-[16px] border-slate-500 overflow-hidden mb-12">
+        
+        <!-- Header Details -->
+        <div class="flex justify-between items-center mb-6 px-4">
+            <div class="h-[3px] w-24 bg-slate-500/50 rounded-full"></div>
+            <div class="text-slate-600 text-[7px] font-sans font-bold italic tracking-widest">DOT MATRIX WITH STEREO SOUND</div>
+        </div>
+
+        <!-- Screen Bezel -->
+        <div class="bg-gb-bezel rounded-xl p-10 pb-6 gb-bezel-shadow relative mb-4">
+            <div class="absolute top-3 left-1/2 -translate-x-1/2 flex gap-1">
+                <div class="w-20 h-[3px] bg-slate-700 rounded-full"></div>
+            </div>
+            
+            <!-- LCD Screen -->
+            <div class="bg-gb-screen aspect-square w-full rounded-sm border-[6px] border-gb-dark/80 relative overflow-hidden flex flex-col gb-texture shadow-[inset_0_0_20px_rgba(0,0,0,0.2)]">
+                <div class="absolute inset-0 lcd-scanline pointer-events-none"></div>
+                
+                <!-- Screen Content -->
+                <div class="flex items-center justify-between p-3 text-gb-dark font-bold">
+                    <div class="flex items-center gap-1">
+                        <div class="w-2 h-3 border-2 border-gb-dark rounded-[1px] relative">
+                            <div class="absolute bottom-0 left-0 w-full h-1/2 bg-gb-dark"></div>
+                        </div>
+                    </div>
+                    <h2 class="text-[9px]">ROUND 01</h2>
+                </div>
+
+                <div class="flex-1 flex flex-col items-center justify-center">
+                    <div class="relative w-36 h-36 bg-gb-dark/10 rounded-2xl flex items-center justify-center">
+                        <!-- Silhouette (using a star as placeholder for pokemon) -->
+                        <div class="w-28 h-28 bg-gb-dark opacity-90" style="clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);"></div>
+                    </div>
+                    <h1 class="text-gb-dark text-5xl mt-4 font-bold">?</h1>
+                </div>
+            </div>
+
+            <!-- Battery Light -->
+            <div class="mt-4 flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.8)]"></div>
+                <span class="text-red-600 text-[7px] font-bold">BATTERY</span>
+            </div>
+        </div>
+
+        <!-- Physical Controls -->
+        <div class="mt-12 grid grid-cols-2 gap-4 h-52">
+            <!-- D-Pad -->
+            <div class="relative flex items-center justify-center">
+                <div class="w-28 h-28 relative dpad-cross">
+                    <!-- Horizontal -->
+                    <div class="absolute top-1/2 left-0 -translate-y-1/2 w-28 h-10 bg-slate-700 rounded-md shadow-inner flex justify-between items-center px-1">
+                        <div class="w-1.5 h-6 bg-slate-800/50 rounded-full"></div>
+                        <div class="w-1.5 h-6 bg-slate-800/50 rounded-full"></div>
+                    </div>
+                    <!-- Vertical -->
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-28 bg-slate-700 rounded-md shadow-inner flex flex-col justify-between items-center py-1">
+                        <div class="w-6 h-1.5 bg-slate-800/50 rounded-full"></div>
+                        <div class="w-6 h-1.5 bg-slate-800/50 rounded-full"></div>
+                    </div>
+                    <!-- Center Circle -->
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-slate-750 rounded-full border border-slate-600/30"></div>
+                </div>
+            </div>
+
+            <!-- Buttons A/B -->
+            <div class="flex items-center justify-center gap-6 rotate-[-25deg] translate-y-6">
+                <div class="flex flex-col items-center">
+                    <div class="w-14 h-14 bg-gb-button rounded-xl gb-btn-shadow gb-btn-active"></div>
+                    <span class="text-slate-700 mt-3 font-sans font-bold text-[10px] tracking-widest rotate-[25deg]">B</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="w-14 h-14 bg-gb-button rounded-xl gb-btn-shadow gb-btn-active"></div>
+                    <span class="text-slate-700 mt-3 font-sans font-bold text-[10px] tracking-widest rotate-[25deg]">A</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Start/Select -->
+        <div class="flex justify-center gap-8 mt-6">
+            <div class="flex flex-col items-center rotate-[-25deg]">
+                <div class="w-12 h-4 bg-slate-600 rounded-full shadow-[inset_0_2px_4px_rgba(0,0,0,0.5),0_2px_0_rgba(255,255,255,0.1)]"></div>
+                <span class="text-slate-700 mt-2 text-[7px] font-bold">SELECT</span>
+            </div>
+            <div class="flex flex-col items-center rotate-[-25deg]">
+                <div class="w-12 h-4 bg-slate-600 rounded-full shadow-[inset_0_2px_4px_rgba(0,0,0,0.5),0_2px_0_rgba(255,255,255,0.1)]"></div>
+                <span class="text-slate-700 mt-2 text-[7px] font-bold">START</span>
+            </div>
+        </div>
+
+        <!-- Speaker Grille -->
+        <div class="absolute bottom-10 right-8 flex gap-3 rotate-[-45deg]">
+            <div class="w-1.5 h-16 bg-slate-500/30 rounded-full"></div>
+            <div class="w-1.5 h-16 bg-slate-500/30 rounded-full"></div>
+            <div class="w-1.5 h-16 bg-slate-500/30 rounded-full"></div>
+            <div class="w-1.5 h-16 bg-slate-500/30 rounded-full"></div>
+            <div class="w-1.5 h-16 bg-slate-500/30 rounded-full"></div>
+            <div class="w-1.5 h-16 bg-slate-500/30 rounded-full"></div>
+        </div>
+    </div>
+
+    <!-- UI Interactive Layer -->
+    <div class="w-full max-w-[420px] flex flex-col gap-6">
+        <!-- Play Button -->
+        <button class="w-full bg-primary text-slate-900 py-5 pixel-border flex items-center justify-center gap-4 active:translate-y-1 transition-all group">
+            <span class="material-symbols-outlined font-bold">volume_up</span>
+            <span class="font-bold text-xs">PLAY CRY</span>
+        </button>
+
+        <!-- Choice Buttons -->
+        <div class="grid grid-cols-2 gap-4">
+            <button class="choice-btn py-5 px-4 text-center group">
+                <span class="text-[11px] font-bold">PIKACHU</span>
+            </button>
+            <button class="choice-btn py-5 px-4 text-center group">
+                <span class="text-[11px] font-bold">PIDGEY</span>
+            </button>
+            <button class="choice-btn py-5 px-4 text-center group">
+                <span class="text-[11px] font-bold">DITTO</span>
+            </button>
+            <button class="choice-btn py-5 px-4 text-center group">
+                <span class="text-[11px] font-bold">CLEFAIRY</span>
+            </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="border-2 border-slate-400 border-dashed p-4 flex justify-between items-center text-slate-500">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined !text-[16px]">military_tech</span>
+                <span class="text-[9px] font-bold">STREAK: 05</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined !text-[16px]">timer</span>
+                <span class="text-[9px] font-bold">00:14</span>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
