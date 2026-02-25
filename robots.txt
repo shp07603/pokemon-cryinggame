@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://shp07603.github.io/pokemon-cryinggame/sitemap.xml
+Sitemap: https://pokemon-cryinggame.pages.dev/sitemap.xml
