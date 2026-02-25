@@ -1,4 +1,12 @@
 User-agent: *
 Allow: /
 
+# Specific bots to ensure they are explicitly allowed (though * covers them)
+User-agent: Yeti
+Allow: /
+User-agent: Daumoa
+Allow: /
+User-agent: Googlebot
+Allow: /
+
 Sitemap: https://pokemon-cryinggame.pages.dev/sitemap.xml
