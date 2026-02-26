@@ -420,6 +420,15 @@ body {
 .game-started .main-title-wrap, .game-started .info-section { display: none; }
 
 @media (max-width: 600px) {
+  .nav-bar {
+    gap: 10px;
+    padding: 10px 5px;
+    flex-wrap: wrap;
+  }
+  .nav-link {
+    font-size: 10px;
+    padding: 5px 4px;
+  }
   .gb-frame { border-radius: 0; border-right: none; border-bottom: none; padding: 25px; }
   .choices { grid-template-columns: 1fr; }
   .px-btn, .choice-btn { font-size: 16px; }
