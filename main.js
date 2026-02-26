@@ -56,7 +56,13 @@ const translations = {
     faqQ2: "Q. How do I play?",
     faqA2: "Listen to the cry and choose the correct Pokemon from 4 options. Use the hint feature if you get stuck!",
     bgmOn: "BGM: ON",
-    bgmOff: "BGM: OFF"
+    bgmOff: "BGM: OFF",
+    shareBtnStart: "SHARE WITH FRIENDS",
+    shareBtnEnd: "SHARE MY SCORE",
+    shareTitle: "POKECRYING GAME",
+    shareMessage: "Can you identify Pokemon by their cries? Challenge me!",
+    shareResult: "I scored {score} PTS in POKECRYING GAME! Can you beat me?",
+    copySuccess: "Link copied to clipboard!"
   },
   ja: {
     mainTitle: "POKECRYING GAME",
@@ -80,7 +86,7 @@ const translations = {
     lastGames: "最近の記録",
     topTrainers: "トップトレーナー",
     aboutTitle: "ポケクライについて",
-    aboutP1: "レトロなゲームボーイスタイルのポケモン鳴き声当てクイズです。",
+    aboutP1: "레트로なゲームボーイスタイルのポケモン鳴き声当てクイズです。",
     aboutP2: "ポケモンの鳴き声を聞いて名前を当て、実力を証明しましょう！",
     terms: "利用規約",
     privacy: "プライバシーポリシー",
@@ -96,12 +102,18 @@ const translations = {
     navHistory: "履歴",
     navRanking: "ランク",
     faqTitle: "よくある質問 (FAQ)",
-    faqQ1: "Q. ポケクライ ゲームとは何ですか？",
+    faqQ1: "Q. ポ케クライ ゲームとは何ですか？",
     faqA1: "鳴き声だけでポケモンを当てる無料のウェブクイズゲームです。レトロなゲームボーイ風のデザインが特徴です。",
     faqQ2: "Q. どうやってプレイしますか？",
     faqA2: "鳴き声を聞いて、4つの選択肢から正しいポケモンを選びます。難しい場合はヒント機能を使うことができます。",
     bgmOn: "BGM: オン",
-    bgmOff: "BGM: オフ"
+    bgmOff: "BGM: オフ",
+    shareBtnStart: "友達に教える",
+    shareBtnEnd: "スコアをシェア",
+    shareTitle: "POKECRYING GAME",
+    shareMessage: "鳴き声だけでポケモンがわかりますか？挑戦してみてください！",
+    shareResult: "POKECRYING GAMEで {score} 点を獲得しました！私を超えられますか？",
+    copySuccess: "リンクをコピーしました！"
   },
   ko: {
     mainTitle: "POKECRYING GAME",
@@ -146,7 +158,13 @@ const translations = {
     faqQ2: "Q. 어떻게 플레이하나요?",
     faqA2: "울음소리를 듣고 4개의 선택지 중 정답인 포켓몬을 고르면 됩니다. 어려울 땐 힌트 기능을 사용할 수 있습니다.",
     bgmOn: "BGM: 켜짐",
-    bgmOff: "BGM: 꺼짐"
+    bgmOff: "BGM: 꺼짐",
+    shareBtnStart: "친구에게 공유하기",
+    shareBtnEnd: "내 점수 공유하기",
+    shareTitle: "POKECRYING GAME",
+    shareMessage: "포켓몬 울음소리만 듣고 맞출 수 있나요? 지금 도전해보세요!",
+    shareResult: "POKECRYING GAME에서 {score}점을 획득했습니다! 당신도 도전해보세요!",
+    copySuccess: "링크가 복사되었습니다!"
   }
 };
 
@@ -214,7 +232,10 @@ const els = {
   navHome: document.getElementById('navHome'),
   navHistory: document.getElementById('navHistory'),
   navRanking: document.getElementById('navRanking'),
-  scoreBoard: document.getElementById('scoreBoard')
+  scoreBoard: document.getElementById('scoreBoard'),
+  
+  shareBtnStart: document.getElementById('shareBtnStart'),
+  shareBtnEnd: document.getElementById('shareBtnEnd')
 };
 
 function init() {
@@ -252,6 +273,9 @@ function setupEventListeners() {
   document.getElementById('openTerms').addEventListener('click', () => els.modalTerms.style.display = 'flex');
   document.getElementById('openPrivacy').addEventListener('click', () => els.modalPrivacy.style.display = 'flex');
   document.querySelectorAll('.modal-close').forEach(btn => btn.addEventListener('click', (e) => e.target.closest('.modal-overlay').style.display = 'none'));
+
+  els.shareBtnStart.addEventListener('click', () => shareGame(false));
+  els.shareBtnEnd.addEventListener('click', () => shareGame(true));
 }
 
 function updateLanguage(lang) {
@@ -301,6 +325,10 @@ function updateLanguage(lang) {
   els.modalTerms.querySelector('.modal-body').innerHTML = t.termsContent;
   els.modalPrivacy.querySelector('h3').textContent = t.privacy;
   els.modalPrivacy.querySelector('.modal-body').innerHTML = t.privacyContent;
+
+  // Share buttons
+  els.shareBtnStart.textContent = t.shareBtnStart;
+  els.shareBtnEnd.textContent = t.shareBtnEnd;
 
   updateBGMText();
 
@@ -587,6 +615,40 @@ function toggleBGM() {
     els.bgm.pause();
   }
   updateBGMText();
+}
+
+async function shareGame(isResult) {
+  const t = translations[state.lang];
+  const url = "https://pokemongame.cc/";
+  const text = isResult 
+    ? t.shareResult.replace('{score}', state.score)
+    : t.shareMessage;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: t.shareTitle,
+        text: text,
+        url: url
+      });
+    } catch (err) {}
+  } else {
+    // Fallback to clipboard
+    const fullText = `${text}\n${url}`;
+    try {
+      await navigator.clipboard.writeText(fullText);
+      alert(t.copySuccess);
+    } catch (err) {
+      // Manual fallback for old browsers
+      const textArea = document.createElement("textarea");
+      textArea.value = fullText;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert(t.copySuccess);
+    }
+  }
 }
 
 init();
