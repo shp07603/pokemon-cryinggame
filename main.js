@@ -54,7 +54,9 @@ const translations = {
     faqQ1: "Q. What is POKECRYING GAME?",
     faqA1: "It's a free web quiz game where you identify Pokemon by their cries alone, featuring a retro Game Boy aesthetic.",
     faqQ2: "Q. How do I play?",
-    faqA2: "Listen to the cry and choose the correct Pokemon from 4 options. Use the hint feature if you get stuck!"
+    faqA2: "Listen to the cry and choose the correct Pokemon from 4 options. Use the hint feature if you get stuck!",
+    bgmOn: "BGM: ON",
+    bgmOff: "BGM: OFF"
   },
   ja: {
     mainTitle: "POKECRYING GAME",
@@ -97,7 +99,9 @@ const translations = {
     faqQ1: "Q. ポケクライ ゲームとは何ですか？",
     faqA1: "鳴き声だけでポケモンを当てる無料のウェブクイズゲームです。レトロなゲームボーイ風のデザインが特徴です。",
     faqQ2: "Q. どうやってプレイしますか？",
-    faqA2: "鳴き声を聞いて、4つの選択肢から正しいポケモンを選びます。難しい場合はヒント機能を使うことができます。"
+    faqA2: "鳴き声を聞いて、4つの選択肢から正しいポケモンを選びます。難しい場合はヒント機能を使うことができます。",
+    bgmOn: "BGM: オン",
+    bgmOff: "BGM: オフ"
   },
   ko: {
     mainTitle: "POKECRYING GAME",
@@ -140,7 +144,9 @@ const translations = {
     faqQ1: "Q. 포켓크라이 게임은 어떤 게임인가요?",
     faqA1: "소리만으로 포켓몬을 식별하는 무료 웹 퀴즈 게임입니다. 게임보이 감성으로 즐길 수 있습니다.",
     faqQ2: "Q. 어떻게 플레이하나요?",
-    faqA2: "울음소리를 듣고 4개의 선택지 중 정답인 포켓몬을 고르면 됩니다. 어려울 땐 힌트 기능을 사용할 수 있습니다."
+    faqA2: "울음소리를 듣고 4개의 선택지 중 정답인 포켓몬을 고르면 됩니다. 어려울 땐 힌트 기능을 사용할 수 있습니다.",
+    bgmOn: "BGM: 켜짐",
+    bgmOff: "BGM: 꺼짐"
   }
 };
 
@@ -303,11 +309,12 @@ function updateLanguage(lang) {
 }
 
 function updateBGMText() {
+  const t = translations[state.lang];
   if (els.bgm.paused) {
-    els.bgmToggle.textContent = 'BGM: OFF';
+    els.bgmToggle.textContent = t.bgmOff;
     els.bgmToggle.style.color = '#000';
   } else {
-    els.bgmToggle.textContent = 'BGM: ON';
+    els.bgmToggle.textContent = t.bgmOn;
     els.bgmToggle.style.color = 'var(--gb-button)';
   }
 }
