@@ -46,7 +46,10 @@ const translations = {
     combo: "COMBO",
     master: "MASTER TRAINER",
     ace: "ACE TRAINER",
-    rookie: "ROOKIE TRAINER"
+    rookie: "ROOKIE TRAINER",
+    navHome: "HOME",
+    navHistory: "HISTORY",
+    navRanking: "RANKING"
   },
   ja: {
     mainTitle: "ポケクライ ゲーム",
@@ -81,7 +84,10 @@ const translations = {
     combo: "コンボ",
     master: "マスター トレーナー",
     ace: "エース トレーナー",
-    rookie: "ルーキー トレーナー"
+    rookie: "ルーキー トレーナー",
+    navHome: "ホーム",
+    navHistory: "履歴",
+    navRanking: "ランク"
   },
   ko: {
     mainTitle: "포켓크라이 게임",
@@ -116,7 +122,10 @@ const translations = {
     combo: "COMBO",
     master: "마스터 트레이너",
     ace: "에이스 트레이너",
-    rookie: "루키 트레이너"
+    rookie: "루키 트레이너",
+    navHome: "홈",
+    navHistory: "기록",
+    navRanking: "랭킹"
   }
 };
 
@@ -180,7 +189,11 @@ const els = {
   bgm: document.getElementById('bgm'),
   bgmToggle: document.getElementById('bgmToggle'),
   
-  langBtns: document.querySelectorAll('.lang-btn')
+  langBtns: document.querySelectorAll('.lang-btn'),
+  navHome: document.getElementById('navHome'),
+  navHistory: document.getElementById('navHistory'),
+  navRanking: document.getElementById('navRanking'),
+  scoreBoard: document.getElementById('scoreBoard')
 };
 
 function init() {
@@ -211,9 +224,9 @@ function setupEventListeners() {
     btn.addEventListener('click', () => updateLanguage(btn.dataset.lang));
   });
 
-  document.getElementById('navHome').addEventListener('click', () => { stopEverything(); showScreen('screenStart'); });
-  document.getElementById('navHistory').addEventListener('click', () => { stopEverything(); showHistory(); });
-  document.getElementById('navRanking').addEventListener('click', () => { stopEverything(); showRanking(); });
+  els.navHome.addEventListener('click', () => { stopEverything(); showScreen('screenStart'); });
+  els.navHistory.addEventListener('click', () => { stopEverything(); showHistory(); });
+  els.navRanking.addEventListener('click', () => { stopEverything(); showRanking(); });
 
   document.getElementById('openTerms').addEventListener('click', () => els.modalTerms.style.display = 'flex');
   document.getElementById('openPrivacy').addEventListener('click', () => els.modalPrivacy.style.display = 'flex');
@@ -239,7 +252,11 @@ function updateLanguage(lang) {
   els.diffBtns[1].innerHTML = t.normal;
   els.diffBtns[2].innerHTML = t.hard;
   
-  // Update Scoreboard labels (direct text change might break layout if not careful)
+  els.navHome.textContent = t.navHome;
+  els.navHistory.textContent = t.navHistory;
+  els.navRanking.textContent = t.navRanking;
+
+  // Update Scoreboard labels
   els.scoreBoard.querySelector('div:first-child span:first-child').textContent = t.score;
   els.scoreBoard.querySelector('div:last-child span:first-child').textContent = t.round;
 
@@ -257,11 +274,6 @@ function updateLanguage(lang) {
   els.modalPrivacy.querySelector('h3').textContent = t.privacy;
   els.modalPrivacy.querySelector('.modal-body').innerHTML = t.privacyContent;
 
-  // Nav links
-  // (Assuming they stay English as symbols or update them too)
-  // document.getElementById('navHome').textContent = t.home; // Optional
-
-  // Update BGM text
   updateBGMText();
 
   // Highlight active lang btn
@@ -269,7 +281,6 @@ function updateLanguage(lang) {
 }
 
 function updateBGMText() {
-  const t = translations[state.lang];
   if (els.bgm.paused) {
     els.bgmToggle.textContent = 'BGM: OFF';
     els.bgmToggle.style.color = '#000';
@@ -486,8 +497,7 @@ function nextRound() {
 }
 
 function getPokemonName(species) {
-  let langKey = state.lang;
-  if (langKey === 'en') langKey = 'en'; // No change needed
+  const langKey = state.lang;
   const nameObj = species.names.find(n => n.language.name === (langKey === 'ko' ? 'ko' : langKey === 'ja' ? 'ja-Hrkt' : 'en'));
   return nameObj ? nameObj.name : species.name;
 }
