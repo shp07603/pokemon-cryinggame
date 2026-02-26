@@ -1,6 +1,7 @@
 /**
  * POKECRYING GAME
  * Fix: Precise 10 Rounds limit & Round Display logic
+ * Multilingual Support: EN, JA, KO
  */
 
 const ROUNDS = 10;
@@ -11,7 +12,116 @@ const DIFFICULTIES = {
   3: { maxId: 386, label: 'HARD' }
 };
 
+const translations = {
+  en: {
+    mainTitle: "POKECRYING GAME",
+    mainSubtitle: "Challenge the Legendary Trainer!<br>Can you identify Pokemon by sound alone?",
+    pressStart: "PRESS START",
+    selectDiffText: "Select difficulty and start",
+    easy: "EASY",
+    normal: "NORMAL",
+    hard: "HARD",
+    battleStart: "▶ BATTLE START",
+    listenCry: "♪ LISTEN TO CRY",
+    hint: "💡 HINT (-50 PTS)",
+    correct: "CORRECT!",
+    wrong: "WRONG!",
+    nextPokemon: "NEXT POKÉMON ▶",
+    viewResults: "VIEW RESULTS ▶",
+    tryAgain: "↺ TRY AGAIN",
+    score: "SCORE",
+    round: "ROUND",
+    searching: "SEARCHING...",
+    lastGames: "LAST GAMES",
+    topTrainers: "TOP TRAINERS",
+    aboutTitle: "ABOUT POKECRYING",
+    aboutP1: "A Pokemon cry guessing game in retro Game Boy style.",
+    aboutP2: "Listen to unique sounds and prove your skills!",
+    terms: "Terms of Use",
+    privacy: "Privacy Policy",
+    termsContent: "This is a fan game. All Pokemon rights belong to Nintendo/Creatures Inc./GAME FREAK inc.<br><br>1. Non-commercial use only.<br>2. Data is stored locally.",
+    privacyContent: "We don't collect sensitive info.<br><br>1. Collected: Scores, streaks, settings.<br>2. Purpose: Local ranking.<br>3. Storage: LocalStorage only.",
+    noData: "NO DATA",
+    rank: "RANK",
+    combo: "COMBO",
+    master: "MASTER TRAINER",
+    ace: "ACE TRAINER",
+    rookie: "ROOKIE TRAINER"
+  },
+  ja: {
+    mainTitle: "ポケクライ ゲーム",
+    mainSubtitle: "伝説のトレーナーに挑戦！<br>鳴き声だけでポケモンを特定できますか？",
+    pressStart: "プレス スタート",
+    selectDiffText: "難易度を選択して開始してください",
+    easy: "かんたん",
+    normal: "ふつう",
+    hard: "むずかしい",
+    battleStart: "▶ バトル開始",
+    listenCry: "♪ 鳴き声を聞く",
+    hint: "💡 ヒント (-50点)",
+    correct: "正解！",
+    wrong: "不正解！",
+    nextPokemon: "次のポケモン ▶",
+    viewResults: "結果を見る ▶",
+    tryAgain: "↺ もう一度",
+    score: "スコア",
+    round: "ラウンド",
+    searching: "読み込み中...",
+    lastGames: "最近の記録",
+    topTrainers: "トップトレーナー",
+    aboutTitle: "ポケクライについて",
+    aboutP1: "レトロなゲームボーイスタイルのポケモン鳴き声当てクイズです。",
+    aboutP2: "ポケモンの鳴き声を聞いて名前を当て、実力を証明しましょう！",
+    terms: "利用規約",
+    privacy: "プライバシーポリシー",
+    termsContent: "本サービスはファンゲームです。著作権は任天堂・クリーチャーズ・ゲームフリークに帰属します。<br><br>1. 非営利目的でのみ利用可能です。<br>2. 記録はローカルに保存されます。",
+    privacyContent: "個人情報は収集しません。<br><br>1. 収集項目：スコア、記録、設定。<br>2. 目的：ランキング表示。<br>3. 保存：LocalStorageのみ。",
+    noData: "データなし",
+    rank: "ランク",
+    combo: "コンボ",
+    master: "マスター トレーナー",
+    ace: "エース トレーナー",
+    rookie: "ルーキー トレーナー"
+  },
+  ko: {
+    mainTitle: "포켓크라이 게임",
+    mainSubtitle: "전설의 트레이너에 도전하세요!<br>소리만으로 포켓몬을 식별할 수 있나요?",
+    pressStart: "PRESS START",
+    selectDiffText: "난이도를 선택하고 시작하세요",
+    easy: "쉬움",
+    normal: "보통",
+    hard: "어려움",
+    battleStart: "▶ 배틀 시작",
+    listenCry: "♪ 울음소리 듣기",
+    hint: "💡 힌트 (-50점)",
+    correct: "정답입니다!",
+    wrong: "틀렸습니다!",
+    nextPokemon: "다음 포켓몬 ▶",
+    viewResults: "결과 보기 ▶",
+    tryAgain: "↺ 다시 하기",
+    score: "SCORE",
+    round: "ROUND",
+    searching: "검색 중...",
+    lastGames: "최근 기록",
+    topTrainers: "명예의 전당",
+    aboutTitle: "ABOUT POKECRYING",
+    aboutP1: "추억의 게임보이 스타일로 즐기는 포켓몬 울음소리 맞추기 게임입니다.",
+    aboutP2: "각 포켓몬 고유의 사운드를 듣고 이름을 맞춰 당신의 실력을 증명하세요!",
+    terms: "이용약관",
+    privacy: "개인정보처리방침",
+    termsContent: "본 서비스는 팬 게임으로, 모든 포켓몬 관련 저작권은 Nintendo/Creatures Inc./GAME FREAK inc.에 있습니다.<br><br>1. 사용자는 비상업적인 목적으로만 본 서비스를 이용할 수 있습니다.<br>2. 서비스 내 점수 및 기록은 브라우저 로컬 저장소에 저장될 수 있습니다.",
+    privacyContent: "POKECRYING GAME은 사용자의 민감한 개인정보를 수집하지 않습니다.<br><br>1. 수집 항목: 게임 점수, 콤보 기록, 난이도 설정값.<br>2. 수집 목적: 게임 기록 유지 및 로컬 랭킹 시스템 제공.<br>3. 저장 방식: 사용자의 로컬 브라우저 저장소(LocalStorage)를 이용하며 서버에는 저장되지 않습니다.",
+    noData: "기록 없음",
+    rank: "RANK",
+    combo: "COMBO",
+    master: "마스터 트레이너",
+    ace: "에이스 트레이너",
+    rookie: "루키 트레이너"
+  }
+};
+
 let state = {
+  lang: 'en',
   difficulty: 1,
   maxId: 151,
   currentRound: 0,
@@ -38,7 +148,7 @@ const els = {
   bgRows: [document.getElementById('bgRow1'), document.getElementById('bgRow2'), document.getElementById('bgRow3')],
   
   headerScore: document.getElementById('headerScore'),
-  headerRound: document.getElementById('headerRound'), // New element
+  headerRound: document.getElementById('headerRound'),
   timerBar: document.getElementById('timerBar'),
   pokemonSprite: document.getElementById('pokemonSprite'),
   unknownIcon: document.getElementById('unknownIcon'),
@@ -68,13 +178,16 @@ const els = {
   modalPrivacy: document.getElementById('modalPrivacy'),
 
   bgm: document.getElementById('bgm'),
-  bgmToggle: document.getElementById('bgmToggle')
+  bgmToggle: document.getElementById('bgmToggle'),
+  
+  langBtns: document.querySelectorAll('.lang-btn')
 };
 
 function init() {
   setupEventListeners();
   initBackgroundRows();
   if (els.bgm) els.bgm.volume = 0.3;
+  updateLanguage('en');
 }
 
 function setupEventListeners() {
@@ -94,6 +207,10 @@ function setupEventListeners() {
     });
   });
 
+  els.langBtns.forEach(btn => {
+    btn.addEventListener('click', () => updateLanguage(btn.dataset.lang));
+  });
+
   document.getElementById('navHome').addEventListener('click', () => { stopEverything(); showScreen('screenStart'); });
   document.getElementById('navHistory').addEventListener('click', () => { stopEverything(); showHistory(); });
   document.getElementById('navRanking').addEventListener('click', () => { stopEverything(); showRanking(); });
@@ -101,6 +218,65 @@ function setupEventListeners() {
   document.getElementById('openTerms').addEventListener('click', () => els.modalTerms.style.display = 'flex');
   document.getElementById('openPrivacy').addEventListener('click', () => els.modalPrivacy.style.display = 'flex');
   document.querySelectorAll('.modal-close').forEach(btn => btn.addEventListener('click', (e) => e.target.closest('.modal-overlay').style.display = 'none'));
+}
+
+function updateLanguage(lang) {
+  state.lang = lang;
+  const t = translations[lang];
+  
+  // Update HTML elements
+  document.getElementById('t-mainTitle').innerHTML = t.mainTitle;
+  document.getElementById('t-mainSubtitle').innerHTML = t.mainSubtitle;
+  document.getElementById('t-pressStart').innerHTML = t.pressStart;
+  document.getElementById('t-selectDiffText').innerHTML = t.selectDiffText;
+  
+  els.startBtn.innerHTML = t.battleStart;
+  els.playCryBtn.innerHTML = t.listenCry;
+  els.hintBtn.innerHTML = t.hint;
+  els.restartBtn.innerHTML = t.tryAgain;
+  
+  els.diffBtns[0].innerHTML = t.easy;
+  els.diffBtns[1].innerHTML = t.normal;
+  els.diffBtns[2].innerHTML = t.hard;
+  
+  // Update Scoreboard labels (direct text change might break layout if not careful)
+  els.scoreBoard.querySelector('div:first-child span:first-child').textContent = t.score;
+  els.scoreBoard.querySelector('div:last-child span:first-child').textContent = t.round;
+
+  // About Section
+  const info = document.querySelector('.info-section');
+  info.querySelector('h2').textContent = t.aboutTitle;
+  info.querySelectorAll('p')[0].textContent = t.aboutP1;
+  info.querySelectorAll('p')[1].textContent = t.aboutP2;
+  document.getElementById('openTerms').textContent = t.terms;
+  document.getElementById('openPrivacy').textContent = t.privacy;
+
+  // Modals
+  els.modalTerms.querySelector('h3').textContent = t.terms;
+  els.modalTerms.querySelector('.modal-body').innerHTML = t.termsContent;
+  els.modalPrivacy.querySelector('h3').textContent = t.privacy;
+  els.modalPrivacy.querySelector('.modal-body').innerHTML = t.privacyContent;
+
+  // Nav links
+  // (Assuming they stay English as symbols or update them too)
+  // document.getElementById('navHome').textContent = t.home; // Optional
+
+  // Update BGM text
+  updateBGMText();
+
+  // Highlight active lang btn
+  els.langBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.lang === lang));
+}
+
+function updateBGMText() {
+  const t = translations[state.lang];
+  if (els.bgm.paused) {
+    els.bgmToggle.textContent = 'BGM: OFF';
+    els.bgmToggle.style.color = '#000';
+  } else {
+    els.bgmToggle.textContent = 'BGM: ON';
+    els.bgmToggle.style.color = 'var(--gb-button)';
+  }
 }
 
 function stopEverything() {
@@ -148,14 +324,14 @@ async function loadRound() {
   state.hintUsed = false;
   state.timeLeft = TIME_LIMIT;
   
-  // 1. INCREMENT ROUND HERE
   state.currentRound++;
   updateHeader();
 
+  const t = translations[state.lang];
   els.timerBar.style.width = '100%';
   els.resultMsg.style.display = 'none';
   els.nextBtnWrap.classList.add('hidden');
-  els.choices.innerHTML = '<div style="font-size:18px; width:100%; text-align:center; padding:20px;">SEARCHING...</div>';
+  els.choices.innerHTML = `<div style="font-size:18px; width:100%; text-align:center; padding:20px;">${t.searching}</div>`;
   els.pokemonSprite.className = 'pokemon-sprite hidden-sprite';
   els.pokemonSprite.style.opacity = '0';
   els.unknownIcon.style.display = 'block';
@@ -175,7 +351,7 @@ async function loadRound() {
     state.crySrc = data.cries.latest || data.cries.legacy;
     els.pokemonSprite.src = data.sprites.other['official-artwork'].front_default || data.sprites.front_default;
 
-    const answerName = `${getKoreanName(speciesData)} (${data.name.toUpperCase()})`;
+    const answerName = `${getPokemonName(speciesData)} (${data.name.toUpperCase()})`;
     const options = [answerName];
     
     while(options.length < 4) {
@@ -186,7 +362,7 @@ async function loadRound() {
       const rData = await rRes.json();
       const rsRes = await fetch(rData.species.url);
       const rsData = await rsRes.json();
-      const rName = `${getKoreanName(rsData)} (${rData.name.toUpperCase()})`;
+      const rName = `${getPokemonName(rsData)} (${rData.name.toUpperCase()})`;
       if (!options.includes(rName)) options.push(rName);
     }
     options.sort(() => Math.random() - 0.5);
@@ -209,7 +385,6 @@ async function loadRound() {
     };
 
   } catch (err) {
-    // If error, undo increment and retry
     state.currentRound--;
     state.usedIds.pop();
     setTimeout(loadRound, 1000);
@@ -221,6 +396,7 @@ function handleAnswer(btn, correct) {
   state.isAnswered = true;
   stopEverything();
 
+  const t = translations[state.lang];
   if (correct) {
     const points = Math.round(state.timeLeft * 10);
     state.score += points;
@@ -228,12 +404,12 @@ function handleAnswer(btn, correct) {
     state.correctCount++;
     state.maxStreak = Math.max(state.maxStreak, state.streak);
     if(btn) btn.style.background = 'var(--primary)';
-    els.resultMsg.textContent = 'CORRECT!';
+    els.resultMsg.textContent = t.correct;
     els.resultMsg.style.color = 'var(--gb-dark)';
   } else {
     state.streak = 0;
     if(btn) btn.style.background = 'var(--error)';
-    els.resultMsg.textContent = 'WRONG!';
+    els.resultMsg.textContent = t.wrong;
     els.resultMsg.style.color = 'var(--error)';
     highlightCorrect();
   }
@@ -243,11 +419,10 @@ function handleAnswer(btn, correct) {
   els.resultMsg.style.display = 'block';
   els.nextBtnWrap.classList.remove('hidden');
   
-  // 2. CHECK FOR END OF GAME
   if (state.currentRound >= ROUNDS) {
-    els.nextBtn.textContent = "VIEW RESULTS ▶";
+    els.nextBtn.textContent = t.viewResults;
   } else {
-    els.nextBtn.textContent = "NEXT POKÉMON ▶";
+    els.nextBtn.textContent = t.nextPokemon;
   }
 }
 
@@ -289,7 +464,7 @@ function revealPokemon() {
 }
 
 function highlightCorrect() {
-  const correctName = `${getKoreanName(state.currentSpecies)} (${state.currentPokemon.name.toUpperCase()})`;
+  const correctName = `${getPokemonName(state.currentSpecies)} (${state.currentPokemon.name.toUpperCase()})`;
   els.choices.querySelectorAll('.choice-btn').forEach(btn => {
     if (btn.textContent === correctName) btn.style.background = 'var(--primary)';
   });
@@ -297,14 +472,12 @@ function highlightCorrect() {
 
 function updateHeader() {
   els.headerScore.textContent = state.score;
-  // 3. UPDATE ROUND UI
   if (els.headerRound) {
     els.headerRound.textContent = `${state.currentRound}/${ROUNDS}`;
   }
 }
 
 function nextRound() {
-  // 4. STRICT LIMIT CHECK
   if (state.currentRound < ROUNDS) {
     loadRound();
   } else {
@@ -312,8 +485,10 @@ function nextRound() {
   }
 }
 
-function getKoreanName(species) {
-  const nameObj = species.names.find(n => n.language.name === 'ko');
+function getPokemonName(species) {
+  let langKey = state.lang;
+  if (langKey === 'en') langKey = 'en'; // No change needed
+  const nameObj = species.names.find(n => n.language.name === (langKey === 'ko' ? 'ko' : langKey === 'ja' ? 'ja-Hrkt' : 'en'));
   return nameObj ? nameObj.name : species.name;
 }
 
@@ -327,18 +502,22 @@ function getUnusedId() {
 
 function showHistory() {
   showScreen('screenHistory');
+  const t = translations[state.lang];
+  els.screens[3].querySelector('div').textContent = t.lastGames;
   const history = JSON.parse(localStorage.getItem('pokeHistory') || '[]');
   els.historyList.innerHTML = history.length ? history.map(h => 
     `<div style="margin-bottom:10px; border-bottom:1px solid rgba(0,0,0,0.1); padding-bottom:5px;">${h.date}: ${h.score} PTS</div>`
-  ).join('') : 'NO DATA';
+  ).join('') : t.noData;
 }
 
 function showRanking() {
   showScreen('screenRanking');
+  const t = translations[state.lang];
+  els.screens[4].querySelector('div').textContent = t.topTrainers;
   const ranking = JSON.parse(localStorage.getItem('pokeRanking') || '[]');
   els.rankingList.innerHTML = ranking.length ? ranking.map((r, i) => 
     `<div style="margin-bottom:10px;">${i+1}st: ${r.score} PTS (${r.date})</div>`
-  ).join('') : 'NO DATA';
+  ).join('') : t.noData;
 }
 
 function endGame() {
@@ -352,23 +531,23 @@ function endGame() {
   localStorage.setItem('pokeRanking', JSON.stringify(ranking.slice(0, 5)));
 
   showScreen('screenEnd');
+  const t = translations[state.lang];
   els.finalScore.textContent = `${state.score} PTS`;
+  els.statRank.previousElementSibling.textContent = t.rank;
+  els.statStreak.previousElementSibling.textContent = t.combo;
   els.statRank.textContent = `TOP ${Math.floor(Math.random() * 15) + 1}%`;
   els.statStreak.textContent = state.maxStreak;
   const pct = state.correctCount / ROUNDS;
-  els.finalGrade.textContent = pct >= 0.9 ? 'MASTER TRAINER' : pct >= 0.7 ? 'ACE TRAINER' : 'ROOKIE TRAINER';
+  els.finalGrade.textContent = pct >= 0.9 ? t.master : pct >= 0.7 ? t.ace : t.rookie;
 }
 
 function toggleBGM() {
   if (els.bgm.paused) {
     els.bgm.play();
-    els.bgmToggle.textContent = 'BGM: ON';
-    els.bgmToggle.style.color = 'var(--gb-button)';
   } else {
     els.bgm.pause();
-    els.bgmToggle.textContent = 'BGM: OFF';
-    els.bgmToggle.style.color = '#000';
   }
+  updateBGMText();
 }
 
 init();

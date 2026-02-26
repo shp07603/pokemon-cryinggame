@@ -61,10 +61,17 @@
 
   <!-- Navigation Bar -->
   <nav class="nav-bar">
-    <div class="nav-link" id="navHome">HOME</div>
-    <div class="nav-link" id="navHistory">HISTORY</div>
-    <div class="nav-link" id="navRanking">RANKING</div>
-    <div class="nav-link" id="bgmToggle">BGM: OFF</div>
+    <div class="lang-switch">
+      <span class="lang-btn" data-lang="en">EN</span> | 
+      <span class="lang-btn" data-lang="ja">JP</span> | 
+      <span class="lang-btn" data-lang="ko">KR</span>
+    </div>
+    <div class="nav-links">
+      <div class="nav-link" id="navHome">HOME</div>
+      <div class="nav-link" id="navHistory">HISTORY</div>
+      <div class="nav-link" id="navRanking">RANKING</div>
+      <div class="nav-link" id="bgmToggle">BGM: OFF</div>
+    </div>
   </nav>
 
   <audio id="bgm" loop>
@@ -73,8 +80,8 @@
 
   <!-- External Title Section -->
   <div class="main-title-wrap">
-    <h1 class="main-title">POKECRYING GAME</h1>
-    <div class="main-subtitle">
+    <h1 class="main-title" id="t-mainTitle">POKECRYING GAME</h1>
+    <div class="main-subtitle" id="t-mainSubtitle">
       전설의 트레이너에 도전하세요!<br>소리만으로 포켓몬을 식별할 수 있나요?
     </div>
   </div>
@@ -92,8 +99,8 @@
         
         <!-- ── START SCREEN ── -->
         <main class="screen active" id="screenStart">
-          <div style="font-size: 18px; margin-bottom: 15px; font-weight: bold; color: #306230;">PRESS START</div>
-          <div style="font-size: 12px; font-family: 'Noto Sans KR'; font-weight: bold; color: #306230;">난이도를 선택하고 시작하세요</div>
+          <div style="font-size: 18px; margin-bottom: 15px; font-weight: bold; color: #306230;" id="t-pressStart">PRESS START</div>
+          <div style="font-size: 12px; font-family: 'Noto Sans KR'; font-weight: bold; color: #306230;" id="t-selectDiffText">난이도를 선택하고 시작하세요</div>
         </main>
 
         <!-- ── GAME SCREEN ── -->
