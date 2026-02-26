@@ -49,7 +49,12 @@ const translations = {
     rookie: "ROOKIE TRAINER",
     navHome: "HOME",
     navHistory: "HISTORY",
-    navRanking: "RANKING"
+    navRanking: "RANKING",
+    faqTitle: "Frequently Asked Questions (FAQ)",
+    faqQ1: "Q. What is POKECRYING GAME?",
+    faqA1: "It's a free web quiz game where you identify Pokemon by their cries alone, featuring a retro Game Boy aesthetic.",
+    faqQ2: "Q. How do I play?",
+    faqA2: "Listen to the cry and choose the correct Pokemon from 4 options. Use the hint feature if you get stuck!"
   },
   ja: {
     mainTitle: "POKECRYING GAME",
@@ -87,7 +92,12 @@ const translations = {
     rookie: "ルーキー トレーナー",
     navHome: "ホーム",
     navHistory: "履歴",
-    navRanking: "ランク"
+    navRanking: "ランク",
+    faqTitle: "よくある質問 (FAQ)",
+    faqQ1: "Q. ポケクライ ゲームとは何ですか？",
+    faqA1: "鳴き声だけでポケモンを当てる無料のウェブクイズゲームです。レトロなゲームボーイ風のデザインが特徴です。",
+    faqQ2: "Q. どうやってプレイしますか？",
+    faqA2: "鳴き声を聞いて、4つの選択肢から正しいポケモンを選びます。難しい場合はヒント機能を使うことができます。"
   },
   ko: {
     mainTitle: "POKECRYING GAME",
@@ -125,7 +135,12 @@ const translations = {
     rookie: "루키 트레이너",
     navHome: "홈",
     navHistory: "기록",
-    navRanking: "랭킹"
+    navRanking: "랭킹",
+    faqTitle: "자주 묻는 질문 (FAQ)",
+    faqQ1: "Q. 포켓크라이 게임은 어떤 게임인가요?",
+    faqA1: "소리만으로 포켓몬을 식별하는 무료 웹 퀴즈 게임입니다. 게임보이 감성으로 즐길 수 있습니다.",
+    faqQ2: "Q. 어떻게 플레이하나요?",
+    faqA2: "울음소리를 듣고 4개의 선택지 중 정답인 포켓몬을 고르면 됩니다. 어려울 땐 힌트 기능을 사용할 수 있습니다."
   }
 };
 
@@ -261,10 +276,17 @@ function updateLanguage(lang) {
   els.scoreBoard.querySelector('div:last-child span:first-child').textContent = t.round;
 
   // About Section
-  const info = document.querySelector('.info-section');
-  info.querySelector('h2').textContent = t.aboutTitle;
-  info.querySelectorAll('p')[0].textContent = t.aboutP1;
-  info.querySelectorAll('p')[1].textContent = t.aboutP2;
+  document.getElementById('t-aboutTitle').textContent = t.aboutTitle;
+  document.getElementById('t-aboutP1').textContent = t.aboutP1;
+  document.getElementById('t-aboutP2').textContent = t.aboutP2;
+  
+  // FAQ Section
+  document.getElementById('t-faqTitle').textContent = t.faqTitle;
+  document.getElementById('t-faqQ1').textContent = t.faqQ1;
+  document.getElementById('t-faqA1').textContent = t.faqA1;
+  document.getElementById('t-faqQ2').textContent = t.faqQ2;
+  document.getElementById('t-faqA2').textContent = t.faqA2;
+
   document.getElementById('openTerms').textContent = t.terms;
   document.getElementById('openPrivacy').textContent = t.privacy;
 
