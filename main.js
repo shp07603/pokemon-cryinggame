@@ -52,7 +52,7 @@ const translations = {
     navRanking: "RANKING"
   },
   ja: {
-    mainTitle: "ポケクライ ゲーム",
+    mainTitle: "POKECRYING GAME",
     mainSubtitle: "伝説のトレーナーに挑戦！<br>鳴き声だけでポケモンを特定できますか？",
     pressStart: "プレス スタート",
     selectDiffText: "難易度を選択して開始してください",
@@ -90,7 +90,7 @@ const translations = {
     navRanking: "ランク"
   },
   ko: {
-    mainTitle: "포켓크라이 게임",
+    mainTitle: "POKECRYING GAME",
     mainSubtitle: "전설의 트레이너에 도전하세요!<br>소리만으로 포켓몬을 식별할 수 있나요?",
     pressStart: "PRESS START",
     selectDiffText: "난이도를 선택하고 시작하세요",
